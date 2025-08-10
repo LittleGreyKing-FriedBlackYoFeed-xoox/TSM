@@ -216,7 +216,7 @@ dmypy.json
 .pyre/
 
 # TSM specific
-explanation/
+# explanation/
 create_project.txt
 start.bat
 upload.md
