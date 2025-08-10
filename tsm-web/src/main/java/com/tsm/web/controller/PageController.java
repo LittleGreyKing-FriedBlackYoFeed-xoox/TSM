@@ -72,4 +72,12 @@ public class PageController {
     public String permissionAssign() {
         return "permission-assign";
     }
+
+    /**
+     * 用户管理页面
+     */
+    @GetMapping("/user-management")
+    public String userManagement() {
+        return "user-management";
+    }
 }

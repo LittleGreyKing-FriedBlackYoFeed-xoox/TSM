@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - TSM</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <link rel="stylesheet" th:href="@{/static/css/common.css}">
+    <style>
+        .user-management {
+            padding: 20px;
+        }
+        
+        .search-form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .table-container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .status-enabled {
+            color: #52c41a;
+        }
+        
+        .status-disabled {
+            color: #ff4d4f;
+        }
+        
+        .avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <!-- 引入头部片段 -->
+        <div th:replace="~{fragments/header :: header}"></div>
+
+        <!-- 主要内容区域 -->
+        <div class="main-content">
+            <div class="user-management">
+                <!-- 搜索表单 -->
+                <div class="search-form">
+                    <form class="layui-form" lay-filter="searchForm">
+                        <div class="layui-row layui-col-space15">
+                            <div class="layui-col-md3">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">用户名</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="username" placeholder="请输入用户名" class="layui-input">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-col-md3">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">真实姓名</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="realName" placeholder="请输入真实姓名" class="layui-input">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-col-md3">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">状态</label>
+                                    <div class="layui-input-block">
+                                        <select name="status">
+                                            <option value="">全部</option>
+                                            <option value="0">正常</option>
+                                            <option value="1">禁用</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-col-md3">
+                                <div class="layui-form-item">
+                                    <div class="layui-input-block">
+                                        <button class="layui-btn" lay-submit lay-filter="search">
+                                            <i class="layui-icon layui-icon-search"></i> 搜索
+                                        </button>
+                                        <button type="reset" class="layui-btn layui-btn-primary">
+                                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 表格容器 -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="layui-row">
+                            <div class="layui-col-md6">
+                                <h3>用户列表</h3>
+                            </div>
+                            <div class="layui-col-md6" style="text-align: right;">
+                                <button class="layui-btn" id="addUser">
+                                    <i class="layui-icon layui-icon-add-1"></i> 新增用户
+                                </button>
+                                <button class="layui-btn layui-btn-danger" id="batchDelete">
+                                    <i class="layui-icon layui-icon-delete"></i> 批量删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <table class="layui-hide" id="userTable" lay-filter="userTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户表格操作列模板 -->
+    <script type="text/html" id="userTableBar">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="resetPassword">重置密码</a>
+        {{# if(d.status == 0) { }}
+            <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="disable">禁用</a>
+        {{# } else { }}
+            <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="enable">启用</a>
+        {{# } }}
+        <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</a>
+    </script>
+
+    <!-- 状态列模板 -->
+    <script type="text/html" id="statusTpl">
+        {{# if(d.status == 0) { }}
+            <span class="status-enabled">正常</span>
+        {{# } else { }}
+            <span class="status-disabled">禁用</span>
+        {{# } }}
+    </script>
+
+    <!-- 头像列模板 -->
+    <script type="text/html" id="avatarTpl">
+        {{# if(d.avatar) { }}
+            <img src="{{d.avatar}}" style="width: 40px; height: 40px; border-radius: 50%;">
+        {{# } else { }}
+            <div class="avatar-placeholder">{{d.realName ? d.realName.charAt(0) : d.username.charAt(0)}}</div>
+        {{# } }}
+    </script>
+
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script th:src="@{/static/js/common.js}"></script>
+    <script>
+        layui.use(['table', 'form', 'layer', 'laydate'], function(){
+            var table = layui.table;
+            var form = layui.form;
+            var layer = layui.layer;
+            var laydate = layui.laydate;
+
+            // 初始化表格
+            var userTable = table.render({
+                elem: '#userTable',
+                url: '/tsm/api/user/list',
+                page: true,
+                cols: [[
+                    {type: 'checkbox', fixed: 'left'},
+                    {field: 'id', title: 'ID', width: 80, sort: true},
+                    {field: 'avatar', title: '头像', width: 80, templet: '#avatarTpl'},
+                    {field: 'username', title: '用户名', width: 120},
+                    {field: 'realName', title: '真实姓名', width: 120},
+                    {field: 'email', title: '邮箱', width: 180},
+                    {field: 'phone', title: '手机号', width: 130},
+                    {field: 'status', title: '状态', width: 80, templet: '#statusTpl'},
+                    {field: 'createTime', title: '创建时间', width: 160, sort: true},
+                    {title: '操作', width: 280, toolbar: '#userTableBar', fixed: 'right'}
+                ]],
+                limit: 10,
+                limits: [10, 20, 50, 100]
+            });
+
+            // 搜索功能
+            form.on('submit(search)', function(data){
+                userTable.reload({
+                    where: data.field,
+                    page: {
+                        curr: 1
+                    }
+                });
+                return false;
+            });
+
+            // 新增用户
+            $('#addUser').on('click', function(){
+                showUserForm('add');
+            });
+
+            // 批量删除
+            $('#batchDelete').on('click', function(){
+                var checkStatus = table.checkStatus('userTable');
+                var data = checkStatus.data;
+                
+                if(data.length === 0){
+                    layer.msg('请选择要删除的用户');
+                    return;
+                }
+                
+                layer.confirm('确定要删除选中的用户吗？', function(index){
+                    var ids = data.map(function(item){
+                        return item.id;
+                    });
+                    
+                    fetch('/tsm/api/user/batch', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(ids)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if(result.code === 0){
+                            layer.msg('删除成功');
+                            userTable.reload();
+                        } else {
+                            layer.msg(result.msg || '删除失败');
+                        }
+                    })
+                    .catch(error => {
+                        layer.msg('删除失败');
+                    });
+                    
+                    layer.close(index);
+                });
+            });
+
+            // 表格工具栏事件
+            table.on('tool(userTable)', function(obj){
+                var data = obj.data;
+                
+                if(obj.event === 'edit'){
+                    showUserForm('edit', data);
+                } else if(obj.event === 'delete'){
+                    layer.confirm('确定要删除该用户吗？', function(index){
+                        fetch('/tsm/api/user/' + data.id, {
+                            method: 'DELETE'
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            if(result.code === 0){
+                                layer.msg('删除成功');
+                                obj.del();
+                            } else {
+                                layer.msg(result.msg || '删除失败');
+                            }
+                        })
+                        .catch(error => {
+                            layer.msg('删除失败');
+                        });
+                        
+                        layer.close(index);
+                    });
+                } else if(obj.event === 'resetPassword'){
+                    layer.confirm('确定要重置该用户的密码吗？重置后密码为：123456', function(index){
+                        fetch('/tsm/api/user/' + data.id + '/reset-password', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({newPassword: '123456'})
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            if(result.code === 0){
+                                layer.msg('重置密码成功');
+                            } else {
+                                layer.msg(result.msg || '重置密码失败');
+                            }
+                        })
+                        .catch(error => {
+                            layer.msg('重置密码失败');
+                        });
+                        
+                        layer.close(index);
+                    });
+                } else if(obj.event === 'enable' || obj.event === 'disable'){
+                    var status = obj.event === 'enable' ? 0 : 1;
+                    var action = obj.event === 'enable' ? '启用' : '禁用';
+                    
+                    layer.confirm('确定要' + action + '该用户吗？', function(index){
+                        fetch('/tsm/api/user/' + data.id + '/status', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({status: status})
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            if(result.code === 0){
+                                layer.msg(action + '成功');
+                                userTable.reload();
+                            } else {
+                                layer.msg(result.msg || action + '失败');
+                            }
+                        })
+                        .catch(error => {
+                            layer.msg(action + '失败');
+                        });
+                        
+                        layer.close(index);
+                    });
+                }
+            });
+
+            // 显示用户表单
+            function showUserForm(type, data) {
+                var title = type === 'add' ? '新增用户' : '编辑用户';
+                var formHtml = `
+                    <form class="layui-form" lay-filter="userForm" style="padding: 20px;">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">用户名</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="username" required lay-verify="required" placeholder="请输入用户名" class="layui-input" ${type === 'edit' ? 'readonly' : ''}>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">真实姓名</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="realName" required lay-verify="required" placeholder="请输入真实姓名" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">邮箱</label>
+                            <div class="layui-input-block">
+                                <input type="email" name="email" lay-verify="email" placeholder="请输入邮箱" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">手机号</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="phone" lay-verify="phone" placeholder="请输入手机号" class="layui-input">
+                            </div>
+                        </div>
+                        ${type === 'add' ? `
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">密码</label>
+                            <div class="layui-input-block">
+                                <input type="password" name="password" placeholder="请输入密码（默认：123456）" class="layui-input">
+                            </div>
+                        </div>
+                        ` : ''}
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">状态</label>
+                            <div class="layui-input-block">
+                                <input type="radio" name="status" value="0" title="正常" checked>
+                                <input type="radio" name="status" value="1" title="禁用">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">备注</label>
+                            <div class="layui-input-block">
+                                <textarea name="remark" placeholder="请输入备注" class="layui-textarea"></textarea>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button class="layui-btn" lay-submit lay-filter="submitUser">确定</button>
+                                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                            </div>
+                        </div>
+                    </form>
+                `;
+                
+                var index = layer.open({
+                    type: 1,
+                    title: title,
+                    content: formHtml,
+                    area: ['500px', '600px'],
+                    success: function(layero, index) {
+                        // 如果是编辑模式，填充表单数据
+                        if (type === 'edit' && data) {
+                            form.val('userForm', {
+                                username: data.username,
+                                realName: data.realName,
+                                email: data.email,
+                                phone: data.phone,
+                                status: data.status,
+                                remark: data.remark
+                            });
+                        }
+                        
+                        // 表单提交事件
+                        form.on('submit(submitUser)', function(formData){
+                            var url = type === 'add' ? '/tsm/api/user/create' : '/tsm/api/user/update';
+                            var method = type === 'add' ? 'POST' : 'PUT';
+                            
+                            if (type === 'edit') {
+                                formData.field.id = data.id;
+                            }
+                            
+                            fetch(url, {
+                                method: method,
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(formData.field)
+                            })
+                            .then(response => response.json())
+                            .then(result => {
+                                if(result.code === 0){
+                                    layer.msg(type === 'add' ? '新增成功' : '更新成功');
+                                    layer.close(index);
+                                    userTable.reload();
+                                } else {
+                                    layer.msg(result.msg || (type === 'add' ? '新增失败' : '更新失败'));
+                                }
+                            })
+                            .catch(error => {
+                                layer.msg(type === 'add' ? '新增失败' : '更新失败');
+                            });
+                            
+                            return false;
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

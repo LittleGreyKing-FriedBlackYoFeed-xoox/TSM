@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TSM</title>
-    <link rel="stylesheet" href="/tsm/layui/css/layui.css">
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
     <style>
         /* 灰白色系主题样式 */
         :root {
@@ -98,7 +98,7 @@
     <ul class="layui-nav layui-layout-right">
         <li class="layui-nav-item">
             <a href="javascript:;">
-                <img src="/tsm/img/favicon.ico" class="layui-nav-img" style="width: 30px; height: 30px;">
+                <img th:src="@{/static/img/favicon.ico}" class="layui-nav-img" style="width: 30px; height: 30px;">
                 <span id="username">用户</span>
             </a>
             <dl class="layui-nav-child">

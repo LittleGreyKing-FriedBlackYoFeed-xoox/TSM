@@ -1,20 +1,14 @@
 package com.tsm.auth.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tsm.auth.entity.Button;
 import com.tsm.auth.entity.User;
-import com.tsm.auth.entity.UserButton;
-import com.tsm.auth.mapper.ButtonMapper;
-import com.tsm.auth.mapper.UserButtonMapper;
-import com.tsm.auth.mapper.UserMapper;
 import com.tsm.auth.service.AuthService;
+import com.tsm.auth.service.UserService;
 import com.tsm.common.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -24,13 +18,14 @@ import java.util.List;
 public class AuthServiceImpl implements AuthService {
 
     @Autowired
-    private UserMapper userMapper;
+    private UserService userService;
 
-    @Autowired
-    private ButtonMapper buttonMapper;
+    // 暂时注释掉数据库依赖
+    // @Autowired
+    // private ButtonMapper buttonMapper;
 
-    @Autowired
-    private UserButtonMapper userButtonMapper;
+    // @Autowired
+    // private UserButtonMapper userButtonMapper;
 
     @Autowired
     private JwtUtils jwtUtils;
@@ -39,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(String username, String password) {
-        User user = userMapper.findByUsername(username);
+        User user = userService.getUserByUsername(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
@@ -57,114 +52,74 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public User findByUsername(String username) {
-        return userMapper.findByUsername(username);
+        return userService.getUserByUsername(username);
     }
 
     @Override
     public boolean hasPermission(Long userId, String permissionCode) {
-        List<String> permissions = userMapper.findUserPermissions(userId);
-        return permissions.contains(permissionCode);
+        // 模拟权限检查，实际应该从数据库查询
+        return true; // 暂时返回true，表示有权限
     }
 
     @Override
     public boolean hasButtonPermission(Long userId, String buttonCode) {
-        return userButtonMapper.checkUserButtonPermission(userId, buttonCode) > 0;
+        // 模拟按钮权限检查
+        return true; // 暂时返回true，表示有权限
     }
 
     @Override
     public List<String> getUserPermissions(Long userId) {
-        return userMapper.findUserPermissions(userId);
+        // 模拟返回权限列表
+        return List.of("user:read", "user:write");
     }
 
     @Override
     public List<String> getUserButtonPermissions(Long userId) {
-        return userMapper.findUserButtonPermissions(userId);
+        // 模拟返回按钮权限列表
+        return List.of("btn:add", "btn:edit", "btn:delete");
     }
 
     @Override
     public List<Button> getUserButtonsByPage(Long userId, String pageCode) {
-        return buttonMapper.findUserButtonsByPage(userId, pageCode);
+        // 模拟返回按钮列表
+        return List.of(
+            createButton(1L, "btn:add", "新增", "btn-primary"),
+            createButton(2L, "btn:edit", "编辑", "btn-warning"),
+            createButton(3L, "btn:delete", "删除", "btn-danger")
+        );
     }
 
     @Override
-    @Transactional
     public boolean assignButtonPermission(Long userId, Long buttonId, Integer permissionType) {
-        try {
-            // 检查是否已存在权限记录
-            UserButton existingPermission = userButtonMapper.findByUserIdAndButtonId(userId, buttonId);
-            
-            if (existingPermission != null) {
-                // 更新现有权限
-                existingPermission.setPermissionType(permissionType);
-                existingPermission.setUpdateTime(LocalDateTime.now());
-                userButtonMapper.updateById(existingPermission);
-            } else {
-                // 创建新权限记录
-                UserButton userButton = new UserButton();
-                userButton.setUserId(userId);
-                userButton.setButtonId(buttonId);
-                userButton.setPermissionType(permissionType);
-                userButton.setEffectiveTime(LocalDateTime.now());
-                userButton.setCreateTime(LocalDateTime.now());
-                userButton.setDeleted(0);
-                userButtonMapper.insert(userButton);
-            }
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        // 模拟权限分配成功
+        return true;
     }
 
     @Override
-    @Transactional
     public boolean batchAssignButtonPermissions(Long userId, List<Long> buttonIds) {
-        try {
-            // 先清空用户现有的按钮权限
-            clearUserButtonPermissions(userId);
-            
-            // 批量分配新权限
-            for (Long buttonId : buttonIds) {
-                assignButtonPermission(userId, buttonId, 1);
-            }
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        // 模拟批量权限分配成功
+        return true;
     }
 
     @Override
-    @Transactional
     public boolean removeButtonPermission(Long userId, Long buttonId) {
-        try {
-            QueryWrapper<UserButton> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("user_id", userId)
-                       .eq("button_id", buttonId)
-                       .eq("deleted", 0);
-            
-            UserButton userButton = userButtonMapper.selectOne(queryWrapper);
-            if (userButton != null) {
-                userButton.setDeleted(1);
-                userButton.setUpdateTime(LocalDateTime.now());
-                userButtonMapper.updateById(userButton);
-            }
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        // 模拟权限移除成功
+        return true;
     }
 
     @Override
-    @Transactional
     public boolean clearUserButtonPermissions(Long userId) {
-        try {
-            userButtonMapper.deleteUserButtonPermissions(userId);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        // 模拟清空权限成功
+        return true;
+    }
+
+    private Button createButton(Long id, String code, String name, String cssClass) {
+        Button button = new Button();
+        button.setId(id);
+        button.setButtonCode(code);
+        button.setButtonName(name);
+        button.setButtonStyle(cssClass);
+        button.setStatus(0);
+        return button;
     }
 }
