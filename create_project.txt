@@ -1,0 +1,28 @@
+请帮我集成一套后台管理系统框架，名字叫TSM。要求使用Spring、SpringBoot、Mybatis、Mysql和Layui技术，使用分布式技术，使用Maven构建工具，静态资源在static中。
+系统需要包含权限管理，权限颗粒度细化到每个按钮，即每个按钮都能分配给指定人员操作。
+使用MVC三层架构方式，即Controller和Model和View分开进行架构，集成Mybatis和Mysql数据库连接，配置好application.yml。
+权限管理建议采用RBAC模型，设计权限表、角色表、用户表及按钮级权限表。
+前端建议使用Layui搭建基础页面，后端接口需支持按钮级权限分配。
+每个功能模块开发后编写详细测试用例，确保权限分配和验证逻辑无误。
+请帮我创建标准清晰的项目结构并完成权限管理的所有功能，每个功能进行详细的测试，并且有测试样例。
+测试通过后写出完整的功能的说明文档。
+我的数据库配置信息是：
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "TSM",
+        "USER": "root",
+        "PASSWORD": "Root@@__135230",
+        "HOST": "47.109.155.118",
+        "PORT": "3309",
+        "OPTIONS": {
+            "connect_timeout": 60,  # 连接超时时间增加到60秒
+            "read_timeout": 60,      # 读取超时时间
+            "write_timeout": 60,     # 写入超时时间
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",  # 初始化命令
+            "charset": "utf8mb4",    # 使用utf8mb4字符集
+        },
+        "CONN_MAX_AGE": 60,          # 连接最大存活时间（秒）
+        "ATOMIC_REQUESTS": False,    # 不要将每个请求包装在事务中
+    }
+}
