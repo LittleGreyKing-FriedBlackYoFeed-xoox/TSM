@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSM</title>
+    <link rel="stylesheet" href="/tsm/layui/css/layui.css">
+    <style>
+        /* 灰白色系主题变量 */
+        :root {
+            --primary-color: #6c757d;
+            --secondary-color: #f8f9fa;
+            --accent-color: #495057;
+            --light-gray: #e9ecef;
+            --dark-gray: #343a40;
+            --white: #ffffff;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--light-gray) 0%, var(--secondary-color) 50%, #ffffff 100%);
+            min-height: 100vh;
+            font-family: 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .main-content {
+            min-height: calc(100vh - 120px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .welcome-container {
+            text-align: center;
+            background: var(--white);
+            padding: 60px 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(108, 117, 125, 0.15);
+            border: 1px solid var(--border-color);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .welcome-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 12px 12px 0 0;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--dark-gray);
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            margin-bottom: 40px;
+            color: var(--primary-color);
+            font-weight: 400;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: var(--primary-color);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 8px;
+            border: 2px solid var(--primary-color);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+            min-width: 120px;
+        }
+
+        .btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.15);
+            color: var(--white);
+        }
+
+        .btn.btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+        }
+
+        .btn.btn-outline:hover {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .loading {
+            display: none;
+            margin-top: 30px;
+            color: var(--primary-color);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 480px) {
+            .welcome-container {
+                padding: 40px 20px;
+                margin: 20px;
+            }
+            
+            .logo {
+                font-size: 36px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <!-- 引入头部片段 -->
+        <div th:replace="~{fragments/header :: header}"></div>
+
+        <!-- 主要内容区域 -->
+        <div class="main-content">
+            <div class="welcome-container">
+                <div class="logo">
+                    <i class="layui-icon layui-icon-home" style="margin-right: 15px; color: var(--primary-color);"></i>
+                    TSM
+                </div>
+                <div class="subtitle">分布式后台管理系统</div>
+                <div class="btn-group">
+                    <a href="/tsm/login" class="btn">
+                        <i class="layui-icon layui-icon-user" style="margin-right: 5px;"></i>
+                        登录系统
+                    </a>
+                    <a href="/tsm/main" class="btn btn-outline">
+                        <i class="layui-icon layui-icon-console" style="margin-right: 5px;"></i>
+                        进入主页
+                    </a>
+                </div>
+                <div class="loading" id="loading">
+                    <div class="loading-spinner"></div>
+                    <span>正在检查登录状态...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 引入尾部片段 -->
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+
+    <script src="/tsm/layui/layui.js"></script>
+    <script>
+        // 检查登录状态并自动跳转
+        document.addEventListener('DOMContentLoaded', function() {
+            var token = localStorage.getItem('token');
+            if (token) {
+                document.getElementById('loading').style.display = 'block';
+                setTimeout(function() {
+                    window.location.href = '/tsm/main';
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

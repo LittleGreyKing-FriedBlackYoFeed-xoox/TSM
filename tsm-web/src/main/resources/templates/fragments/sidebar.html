@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* 侧边栏样式 */
+        .layui-layout-admin .layui-side {
+            background: linear-gradient(180deg, var(--white) 0%, var(--secondary-color) 100%);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+        }
+
+        .layui-nav-tree {
+            background: transparent !important;
+        }
+
+        .layui-nav-tree .layui-nav-item {
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .layui-nav-tree .layui-nav-item:last-child {
+            border-bottom: none;
+        }
+
+        .layui-nav-tree .layui-nav-item a {
+            color: var(--accent-color) !important;
+            padding: 15px 20px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .layui-nav-tree .layui-nav-item a:hover {
+            background-color: var(--light-gray) !important;
+            color: var(--dark-gray) !important;
+        }
+
+        .layui-nav-tree .layui-this > a {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%) !important;
+            color: var(--white) !important;
+            border-left: 4px solid var(--dark-gray);
+        }
+
+        .layui-nav-tree .layui-nav-child {
+            background: var(--secondary-color) !important;
+            border-top: 1px solid var(--light-gray);
+        }
+
+        .layui-nav-tree .layui-nav-child dd a {
+            color: var(--primary-color) !important;
+            padding: 12px 20px 12px 40px;
+            font-size: 13px;
+            position: relative;
+        }
+
+        .layui-nav-tree .layui-nav-child dd a:before {
+            content: "•";
+            position: absolute;
+            left: 25px;
+            color: var(--primary-color);
+        }
+
+        .layui-nav-tree .layui-nav-child dd a:hover {
+            background-color: var(--light-gray) !important;
+            color: var(--dark-gray) !important;
+        }
+
+        .layui-nav-tree .layui-nav-child dd.layui-this a {
+            background: var(--primary-color) !important;
+            color: var(--white) !important;
+        }
+
+        /* 图标样式 */
+        .layui-nav-tree .layui-icon {
+            margin-right: 10px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* 折叠按钮 */
+        .sidebar-toggle {
+            position: absolute;
+            top: 10px;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--light-gray);
+        }
+
+        .sidebar-toggle i {
+            font-size: 14px;
+            color: var(--primary-color);
+        }
+
+        /* 侧边栏收起状态 */
+        .layui-side.collapsed {
+            width: 60px !important;
+        }
+
+        .layui-side.collapsed .layui-nav-tree .layui-nav-item a {
+            text-align: center;
+            padding: 15px 5px;
+        }
+
+        .layui-side.collapsed .layui-nav-tree .layui-nav-item a span {
+            display: none;
+        }
+
+        .layui-side.collapsed .layui-nav-tree .layui-nav-child {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<!-- 侧边栏片段 -->
+<div th:fragment="sidebar" class="layui-side layui-bg-black" id="sidebar">
+    <div class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="layui-icon layui-icon-shrink-right" id="toggleIcon"></i>
+    </div>
+    
+    <div class="layui-side-scroll">
+        <ul class="layui-nav layui-nav-tree" lay-filter="nav">
+            <li class="layui-nav-item layui-this">
+                <a href="javascript:;" onclick="loadContent('dashboard', '首页')">
+                    <i class="layui-icon layui-icon-home"></i>
+                    <span>首页</span>
+                </a>
+            </li>
+            
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <i class="layui-icon layui-icon-user"></i>
+                    <span>用户管理</span>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="javascript:;" onclick="loadContent('user-list', '用户列表')">用户列表</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('user-add', '添加用户')">添加用户</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('user-import', '批量导入')">批量导入</a></dd>
+                </dl>
+            </li>
+            
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <i class="layui-icon layui-icon-group"></i>
+                    <span>角色管理</span>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="javascript:;" onclick="loadContent('role-list', '角色列表')">角色列表</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('role-add', '添加角色')">添加角色</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('role-permission', '角色权限')">角色权限</a></dd>
+                </dl>
+            </li>
+            
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <i class="layui-icon layui-icon-set"></i>
+                    <span>权限管理</span>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="javascript:;" onclick="loadContent('permission-list', '权限列表')">权限列表</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('permission-tree', '权限树')">权限树</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('permission-assign', '权限分配')">权限分配</a></dd>
+                </dl>
+            </li>
+            
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <i class="layui-icon layui-icon-component"></i>
+                    <span>按钮管理</span>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="javascript:;" onclick="loadContent('button-list', '按钮列表')">按钮列表</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('button-permission', '按钮权限')">按钮权限</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('button-config', '按钮配置')">按钮配置</a></dd>
+                </dl>
+            </li>
+            
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <i class="layui-icon layui-icon-chart"></i>
+                    <span>统计分析</span>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="javascript:;" onclick="loadContent('stats-overview', '数据概览')">数据概览</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('stats-user', '用户统计')">用户统计</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('stats-permission', '权限统计')">权限统计</a></dd>
+                </dl>
+            </li>
+            
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <i class="layui-icon layui-icon-log"></i>
+                    <span>系统日志</span>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="javascript:;" onclick="loadContent('log-operation', '操作日志')">操作日志</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('log-login', '登录日志')">登录日志</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('log-error', '错误日志')">错误日志</a></dd>
+                </dl>
+            </li>
+            
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <i class="layui-icon layui-icon-set-sm"></i>
+                    <span>系统设置</span>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="javascript:;" onclick="loadContent('system-config', '系统配置')">系统配置</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('system-backup', '数据备份')">数据备份</a></dd>
+                    <dd><a href="javascript:;" onclick="loadContent('system-monitor', '系统监控')">系统监控</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // 侧边栏折叠功能
+    var sidebarCollapsed = false;
+    
+    function toggleSidebar() {
+        var sidebar = document.getElementById('sidebar');
+        var toggleIcon = document.getElementById('toggleIcon');
+        var body = document.querySelector('.layui-body');
+        
+        if (sidebarCollapsed) {
+            // 展开侧边栏
+            sidebar.classList.remove('collapsed');
+            toggleIcon.className = 'layui-icon layui-icon-shrink-right';
+            if (body) {
+                body.style.left = '200px';
+            }
+            sidebarCollapsed = false;
+        } else {
+            // 收起侧边栏
+            sidebar.classList.add('collapsed');
+            toggleIcon.className = 'layui-icon layui-icon-spread-left';
+            if (body) {
+                body.style.left = '60px';
+            }
+            sidebarCollapsed = true;
+        }
+        
+        // 保存状态到localStorage
+        localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
+    }
+    
+    // 页面加载时恢复侧边栏状态
+    document.addEventListener('DOMContentLoaded', function() {
+        var savedState = localStorage.getItem('sidebarCollapsed');
+        if (savedState === 'true') {
+            toggleSidebar();
+        }
+    });
+    
+    // 导航点击处理
+    function loadContent(page, title) {
+        // 更新面包屑
+        if (typeof updateBreadcrumb === 'function') {
+            updateBreadcrumb(title, page);
+        }
+        
+        // 更新导航状态
+        updateNavState(page);
+        
+        // 加载内容
+        if (typeof window.loadPageContent === 'function') {
+            window.loadPageContent(page);
+        } else {
+            console.log('加载页面:', page, title);
+        }
+    }
+    
+    // 更新导航状态
+    function updateNavState(page) {
+        // 移除所有当前状态
+        var navItems = document.querySelectorAll('.layui-nav-tree .layui-nav-item');
+        navItems.forEach(function(item) {
+            item.classList.remove('layui-this');
+        });
+        
+        var childItems = document.querySelectorAll('.layui-nav-tree .layui-nav-child dd');
+        childItems.forEach(function(item) {
+            item.classList.remove('layui-this');
+        });
+        
+        // 根据页面设置当前状态
+        var targetElement = document.querySelector('[onclick*="' + page + '"]');
+        if (targetElement) {
+            var parentLi = targetElement.closest('.layui-nav-item');
+            var parentDd = targetElement.closest('dd');
+            
+            if (parentDd) {
+                // 子菜单项
+                parentDd.classList.add('layui-this');
+                parentLi.classList.add('layui-nav-itemed');
+            } else {
+                // 主菜单项
+                parentLi.classList.add('layui-this');
+            }
+        }
+    }
+</script>
+</html>

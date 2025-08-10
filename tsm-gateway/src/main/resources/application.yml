@@ -1,0 +1,48 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: tsm-gateway
+  
+  cloud:
+    gateway:
+      routes:
+        - id: tsm-web
+          uri: http://localhost:8080
+          predicates:
+            - Path=/tsm/**
+          filters:
+            - StripPrefix=0
+            
+        - id: tsm-api
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/**
+          filters:
+            - StripPrefix=0
+      
+      # 全局CORS配置
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+# 日志配置
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: DEBUG
