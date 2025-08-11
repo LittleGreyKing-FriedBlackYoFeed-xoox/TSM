@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批量导入用户 - TSM</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        /* 使用全局CSS变量 */
+        :root {
+            --primary-color: #6c757d;
+            --secondary-color: #f8f9fa;
+            --accent-color: #495057;
+            --light-gray: #e9ecef;
+            --dark-gray: #343a40;
+            --white: #ffffff;
+            --border-color: #dee2e6;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+
+        .batch-import-container {
+            padding: 24px;
+            background: transparent;
+        }
+        
+        .import-card {
+            background: var(--white);
+            padding: 32px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 12px;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: var(--secondary-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: var(--white);
+        }
+        
+        .upload-area.dragover {
+            border-color: var(--success-color);
+            background: rgba(40, 167, 69, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+        }
+        
+        .upload-text {
+            color: var(--accent-color);
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .upload-hint {
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+        
+        .template-section {
+            background: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .template-title {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .template-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--white);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .template-table th,
+        .template-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .template-table th {
+            background: var(--light-gray);
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        
+        .template-table td {
+            color: var(--primary-color);
+        }
+        
+        .progress-section {
+            display: none;
+            margin-top: 24px;
+        }
+        
+        .progress-bar {
+            background: var(--light-gray);
+            border-radius: 4px;
+            overflow: hidden;
+            height: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .result-section {
+            display: none;
+            margin-top: 24px;
+        }
+        
+        .result-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .stat-item {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .stat-success .stat-number { color: var(--success-color); }
+        .stat-error .stat-number { color: var(--danger-color); }
+        .stat-total .stat-number { color: var(--info-color); }
+        
+        .stat-label {
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+        
+        .error-list {
+            background: var(--white);
+            border: 1px solid var(--danger-color);
+            border-radius: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .error-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--danger-color);
+        }
+        
+        .error-item:last-child {
+            border-bottom: none;
+        }
+        
+        .layui-btn {
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .layui-btn-normal {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .layui-btn-normal:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <!-- 引入头部片段 -->
+        <div th:replace="~{fragments/header :: header}"></div>
+
+        <!-- 主要内容区域 -->
+        <div class="main-content">
+            <div class="batch-import-container">
+                <!-- 模板说明 -->
+                <div class="import-card">
+                    <h2 class="card-title">
+                        <i class="layui-icon layui-icon-template-1" style="margin-right: 8px;"></i>
+                        导入模板说明
+                    </h2>
+                    
+                    <div class="template-section">
+                        <div class="template-title">
+                            <i class="layui-icon layui-icon-file" style="margin-right: 4px;"></i>
+                            Excel模板格式
+                        </div>
+                        <table class="template-table">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>真实姓名</th>
+                                    <th>密码</th>
+                                    <th>邮箱</th>
+                                    <th>手机号</th>
+                                    <th>状态</th>
+                                    <th>备注</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>zhangsan</td>
+                                    <td>张三</td>
+                                    <td>123456</td>
+                                    <td>zhangsan@example.com</td>
+                                    <td>13800138001</td>
+                                    <td>0</td>
+                                    <td>测试用户</td>
+                                </tr>
+                                <tr>
+                                    <td>lisi</td>
+                                    <td>李四</td>
+                                    <td>123456</td>
+                                    <td>lisi@example.com</td>
+                                    <td>13800138002</td>
+                                    <td>0</td>
+                                    <td>普通用户</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div style="margin-top: 16px; color: var(--primary-color); font-size: 14px;">
+                            <p><strong>字段说明：</strong></p>
+                            <ul style="margin-left: 20px;">
+                                <li><strong>用户名：</strong>必填，系统唯一标识</li>
+                                <li><strong>真实姓名：</strong>必填，用户真实姓名</li>
+                                <li><strong>密码：</strong>必填，建议6位以上</li>
+                                <li><strong>邮箱：</strong>选填，需符合邮箱格式</li>
+                                <li><strong>手机号：</strong>选填，11位手机号码</li>
+                                <li><strong>状态：</strong>0=正常，1=禁用，默认为0</li>
+                                <li><strong>备注：</strong>选填，用户备注信息</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="margin-top: 16px;">
+                            <button class="layui-btn layui-btn-normal" onclick="downloadTemplate()">
+                                <i class="layui-icon layui-icon-download-circle"></i> 下载模板
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 文件上传 -->
+                <div class="import-card">
+                    <h2 class="card-title">
+                        <i class="layui-icon layui-icon-upload" style="margin-right: 8px;"></i>
+                        上传用户文件
+                    </h2>
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="layui-icon layui-icon-upload-drag"></i>
+                        </div>
+                        <div class="upload-text">点击选择文件或拖拽文件到此处</div>
+                        <div class="upload-hint">支持 .xlsx, .xls 格式，文件大小不超过10MB</div>
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                    </div>
+                    
+                    <div class="progress-section" id="progressSection">
+                        <h4 style="color: var(--accent-color); margin-bottom: 12px;">导入进度</h4>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div id="progressText" style="text-align: center; color: var(--primary-color);">准备导入...</div>
+                    </div>
+                    
+                    <div class="result-section" id="resultSection">
+                        <h4 style="color: var(--accent-color); margin-bottom: 16px;">导入结果</h4>
+                        <div class="result-stats">
+                            <div class="stat-item stat-total">
+                                <div class="stat-number" id="totalCount">0</div>
+                                <div class="stat-label">总计</div>
+                            </div>
+                            <div class="stat-item stat-success">
+                                <div class="stat-number" id="successCount">0</div>
+                                <div class="stat-label">成功</div>
+                            </div>
+                            <div class="stat-item stat-error">
+                                <div class="stat-number" id="errorCount">0</div>
+                                <div class="stat-label">失败</div>
+                            </div>
+                        </div>
+                        
+                        <div id="errorSection" style="display: none;">
+                            <h5 style="color: var(--danger-color); margin-bottom: 12px;">错误详情</h5>
+                            <div class="error-list" id="errorList"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 24px;">
+                        <button class="layui-btn layui-btn-normal" id="startImport" style="display: none;">
+                            <i class="layui-icon layui-icon-ok"></i> 开始导入
+                        </button>
+                        <button class="layui-btn layui-btn-warm" onclick="goBack()">
+                            <i class="layui-icon layui-icon-return"></i> 返回
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 引入尾部片段 -->
+        <div th:replace="~{fragments/footer :: footer}"></div>
+        <div th:replace="~{fragments/footer :: backToTop}"></div>
+    </div>
+
+    <script th:src="@{/layui/layui.js}"></script>
+    <script th:inline="none">
+        layui.use(['layer', 'upload'], function(){
+            var layer = layui.layer;
+            var upload = layui.upload;
+            
+            var selectedFile = null;
+            
+            // 文件上传区域点击事件
+            document.getElementById('uploadArea').addEventListener('click', function() {
+                document.getElementById('fileInput').click();
+            });
+            
+            // 文件选择事件
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    handleFileSelect(file);
+                }
+            });
+            
+            // 拖拽上传
+            var uploadArea = document.getElementById('uploadArea');
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                var files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelect(files[0]);
+                }
+            });
+            
+            // 处理文件选择
+            function handleFileSelect(file) {
+                // 验证文件类型
+                var allowedTypes = [
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/vnd.ms-excel'
+                ];
+                
+                if (!allowedTypes.includes(file.type)) {
+                    layer.msg('请选择Excel文件（.xlsx或.xls格式）', {icon: 2});
+                    return;
+                }
+                
+                // 验证文件大小（10MB）
+                if (file.size > 10 * 1024 * 1024) {
+                    layer.msg('文件大小不能超过10MB', {icon: 2});
+                    return;
+                }
+                
+                selectedFile = file;
+                
+                // 更新上传区域显示
+                var uploadArea = document.getElementById('uploadArea');
+                uploadArea.innerHTML = `
+                    <div class="upload-icon">
+                        <i class="layui-icon layui-icon-file" style="color: var(--success-color);"></i>
+                    </div>
+                    <div class="upload-text" style="color: var(--success-color);">已选择文件：` + file.name + `</div>
+                    <div class="upload-hint">文件大小：` + (file.size / 1024 / 1024).toFixed(2) + `MB</div>
+                `;
+                
+                // 显示开始导入按钮
+                document.getElementById('startImport').style.display = 'inline-block';
+                
+                layer.msg('文件选择成功，点击"开始导入"进行批量导入', {icon: 1});
+            }
+            
+            // 开始导入
+            document.getElementById('startImport').addEventListener('click', function() {
+                if (!selectedFile) {
+                    layer.msg('请先选择要导入的文件', {icon: 2});
+                    return;
+                }
+                
+                startImport();
+            });
+            
+            // 执行导入
+            function startImport() {
+                // 显示进度区域
+                document.getElementById('progressSection').style.display = 'block';
+                document.getElementById('resultSection').style.display = 'none';
+                
+                var formData = new FormData();
+                formData.append('file', selectedFile);
+                
+                // 模拟进度更新
+                var progress = 0;
+                var progressInterval = setInterval(function() {
+                    progress += Math.random() * 20;
+                    if (progress > 90) progress = 90;
+                    updateProgress(progress, '正在解析文件...');
+                }, 200);
+                
+                // 发送请求
+                fetch('/api/user/batch-import', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(result => {
+                    clearInterval(progressInterval);
+                    updateProgress(100, '导入完成');
+                    
+                    setTimeout(function() {
+                        showResult(result);
+                    }, 500);
+                })
+                .catch(error => {
+                    clearInterval(progressInterval);
+                    console.error('Error:', error);
+                    
+                    // 模拟错误结果
+                    var mockResult = {
+                        code: 500,
+                        msg: '网络错误，请稍后重试',
+                        data: {
+                            total: 0,
+                            success: 0,
+                            error: 0,
+                            errors: ['网络连接失败，无法完成导入操作']
+                        }
+                    };
+                    
+                    updateProgress(100, '导入失败');
+                    setTimeout(function() {
+                        showResult(mockResult);
+                    }, 500);
+                });
+            }
+            
+            // 更新进度
+            function updateProgress(percent, text) {
+                document.getElementById('progressFill').style.width = percent + '%';
+                document.getElementById('progressText').textContent = text;
+            }
+            
+            // 显示结果
+            function showResult(result) {
+                document.getElementById('progressSection').style.display = 'none';
+                document.getElementById('resultSection').style.display = 'block';
+                
+                var data = result.data || { total: 0, success: 0, error: 0, errors: [] };
+                
+                document.getElementById('totalCount').textContent = data.total || 0;
+                document.getElementById('successCount').textContent = data.success || 0;
+                document.getElementById('errorCount').textContent = data.error || 0;
+                
+                // 显示错误详情
+                if (data.errors && data.errors.length > 0) {
+                    document.getElementById('errorSection').style.display = 'block';
+                    var errorList = document.getElementById('errorList');
+                    errorList.innerHTML = '';
+                    
+                    data.errors.forEach(function(error) {
+                        var errorItem = document.createElement('div');
+                        errorItem.className = 'error-item';
+                        errorItem.textContent = error;
+                        errorList.appendChild(errorItem);
+                    });
+                } else {
+                    document.getElementById('errorSection').style.display = 'none';
+                }
+                
+                // 显示结果消息
+                if (result.code === 0 || result.code === 200) {
+                    if (data.error === 0) {
+                        layer.msg('批量导入成功！', {icon: 1});
+                    } else {
+                        layer.msg('导入完成，成功' + data.success + '条，失败' + data.error + '条', {icon: 3});
+                    }
+                } else {
+                    layer.msg(result.msg || '导入失败', {icon: 2});
+                }
+            }
+        });
+        
+        // 下载模板
+        function downloadTemplate() {
+            // 创建模板数据
+            var templateData = [
+                ['用户名', '真实姓名', '密码', '邮箱', '手机号', '状态', '备注'],
+                ['zhangsan', '张三', '123456', 'zhangsan@example.com', '13800138001', '0', '测试用户'],
+                ['lisi', '李四', '123456', 'lisi@example.com', '13800138002', '0', '普通用户']
+            ];
+            
+            // 创建CSV内容
+            var csvContent = templateData.map(row => row.join(',')).join('\n');
+            
+            // 创建下载链接
+            var blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement('a');
+            var url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', '用户导入模板.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            layui.use('layer', function(){
+                var layer = layui.layer;
+                layer.msg('模板下载成功', {icon: 1});
+            });
+        }
+        
+        // 返回上一页
+        function goBack() {
+            history.back();
+        }
+    </script>
+</body>
+</html>

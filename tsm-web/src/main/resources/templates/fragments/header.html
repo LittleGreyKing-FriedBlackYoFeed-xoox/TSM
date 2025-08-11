@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TSM</title>
-    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}">
     <style>
         /* 灰白色系主题样式 */
         :root {
@@ -15,28 +15,38 @@
             --dark-gray: #343a40;
             --white: #ffffff;
             --border-color: #dee2e6;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
         }
 
         .layui-layout-admin .layui-header {
-            background: linear-gradient(135deg, var(--dark-gray) 0%, var(--primary-color) 100%);
+            background: linear-gradient(135deg, var(--white) 0%, var(--secondary-color) 100%);
             border-bottom: 1px solid var(--border-color);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .layui-logo {
-            color: var(--white) !important;
+            color: var(--accent-color) !important;
             font-weight: 600 !important;
             font-size: 18px !important;
             letter-spacing: 1px;
         }
 
         .layui-nav .layui-nav-item a {
-            color: var(--white) !important;
+            color: var(--accent-color) !important;
             transition: all 0.3s ease;
         }
 
         .layui-nav .layui-nav-item a:hover {
-            background-color: rgba(255, 255, 255, 0.1) !important;
+            background-color: var(--light-gray) !important;
+            color: var(--dark-gray) !important;
+        }
+
+        .layui-nav .layui-this a {
+            background-color: var(--primary-color) !important;
+            color: var(--white) !important;
         }
 
         .layui-nav-img {
@@ -98,7 +108,7 @@
     <ul class="layui-nav layui-layout-right">
         <li class="layui-nav-item">
             <a href="javascript:;">
-                <img th:src="@{/static/img/favicon.ico}" class="layui-nav-img" style="width: 30px; height: 30px;">
+                <img th:src="@{/img/favicon.ico}" class="layui-nav-img" style="width: 30px; height: 30px;">
                 <span id="username">用户</span>
             </a>
             <dl class="layui-nav-child">
@@ -124,7 +134,7 @@
     </span>
 </div>
 
-<script>
+<script th:inline="none">
     // 面包屑导航管理
     var breadcrumbManager = {
         history: [{ name: '首页', page: 'dashboard' }],
@@ -207,7 +217,7 @@
             return;
         }
         
-        fetch('/tsm/api/auth/userinfo', {
+        fetch('/api/auth/userinfo', {
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + token
@@ -265,7 +275,7 @@
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 layer.close(index);
-                window.location.href = '/tsm/login';
+                window.location.href = '/login';
             });
         });
     }

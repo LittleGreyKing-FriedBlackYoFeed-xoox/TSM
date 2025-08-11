@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 认证控制器 - 简化版本
+ * 认证API控制器
+ * 负责用户认证相关的REST API接口
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -22,12 +23,18 @@ public class AuthController {
         String password = loginData.get("password");
         
         // 简单的用户验证（实际项目中应该查询数据库）
-        if ("admin".equals(username) && "123456".equals(password)) {
+        if (("admin".equals(username) || "test".equals(username)) && "123456".equals(password)) {
             Map<String, Object> data = new HashMap<>();
             Map<String, Object> user = new HashMap<>();
-            user.put("id", 1);
-            user.put("username", "admin");
-            user.put("nickname", "管理员");
+            if ("admin".equals(username)) {
+                user.put("id", 1);
+                user.put("username", "admin");
+                user.put("nickname", "管理员");
+            } else {
+                user.put("id", 2);
+                user.put("username", "test");
+                user.put("nickname", "测试用户");
+            }
             
             data.put("token", "mock-jwt-token-" + System.currentTimeMillis());
             data.put("user", user);

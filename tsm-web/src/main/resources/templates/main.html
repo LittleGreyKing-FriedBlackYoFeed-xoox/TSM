@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TSM</title>
-    <link rel="stylesheet" href="/tsm/layui/css/layui.css">
+    <link rel="stylesheet" href="/layui/css/layui.css">
     <style>
         /* 灰白色系主题变量 */
         :root {
@@ -28,6 +28,134 @@
 
         .layui-layout-body {
             background-color: var(--secondary-color);
+        }
+
+        /* 强制覆盖Layui默认样式 */
+        .layui-layout-admin .layui-header {
+            background: linear-gradient(135deg, var(--white) 0%, var(--secondary-color) 100%) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+
+        .layui-layout-admin .layui-side {
+            background: linear-gradient(180deg, var(--white) 0%, var(--secondary-color) 100%) !important;
+            border-right: 1px solid var(--border-color) !important;
+        }
+
+        .layui-nav {
+            background: transparent !important;
+        }
+
+        .layui-nav .layui-nav-item a {
+            color: var(--accent-color) !important;
+        }
+
+        .layui-nav .layui-nav-item a:hover {
+            background-color: var(--light-gray) !important;
+            color: var(--dark-gray) !important;
+        }
+
+        .layui-nav .layui-this a {
+            background-color: var(--primary-color) !important;
+            color: var(--white) !important;
+        }
+
+        .layui-logo {
+            color: var(--accent-color) !important;
+        }
+
+        /* 侧边栏导航项强制样式覆盖 */
+        .layui-nav-tree {
+            background: transparent !important;
+        }
+
+        .layui-nav-tree .layui-nav-item a {
+            color: var(--accent-color) !important;
+            background: transparent !important;
+        }
+
+        .layui-nav-tree .layui-nav-item a:hover {
+            background-color: var(--light-gray) !important;
+            color: var(--dark-gray) !important;
+        }
+
+        .layui-nav-tree .layui-this > a,
+        .layui-nav-tree .layui-nav-item.layui-this > a {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%) !important;
+            color: var(--white) !important;
+        }
+
+        /* 下拉菜单样式强制覆盖 */
+        .layui-nav-tree .layui-nav-child {
+            background: var(--secondary-color) !important;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+
+        .layui-nav-tree .layui-nav-child dd a {
+            color: var(--primary-color) !important;
+            background: transparent !important;
+        }
+
+        .layui-nav-tree .layui-nav-child dd a:hover {
+            background-color: var(--light-gray) !important;
+            color: var(--dark-gray) !important;
+        }
+
+        .layui-nav-tree .layui-nav-child dd.layui-this a {
+            background: var(--primary-color) !important;
+            color: var(--white) !important;
+        }
+
+        /* 确保展开的菜单项父级样式 */
+        .layui-nav-tree .layui-nav-itemed > a {
+            background-color: var(--light-gray) !important;
+            color: var(--dark-gray) !important;
+        }
+
+        /* 侧边栏收缩状态样式 */
+        .layui-side.collapsed {
+            width: 60px !important;
+        }
+
+        .layui-side.collapsed .layui-nav-tree .layui-nav-item a {
+            text-align: center !important;
+            padding: 15px 5px !important;
+        }
+
+        .layui-side.collapsed .layui-nav-tree .layui-nav-item a span {
+            display: none !important;
+        }
+
+        .layui-side.collapsed .layui-nav-tree .layui-nav-child {
+            display: none !important;
+        }
+
+        /* 折叠按钮样式 */
+        .sidebar-toggle {
+            position: absolute;
+            top: 10px;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--light-gray);
+        }
+
+        .sidebar-toggle i {
+            font-size: 14px;
+            color: var(--primary-color);
         }
 
         /* 主体内容样式 */
@@ -322,11 +450,11 @@
         <div th:replace="fragments/footer :: backToTop"></div>
     </div>
 
-    <script src="/tsm/layui/layui.js"></script>
+    <script src="/layui/layui.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/tsm/js/main.js"></script>
+    <script src="/js/main.js"></script>
 
-    <script>
+    <script th:inline="none">
         layui.use(['element', 'layer'], function(){
             var element = layui.element;
             var layer = layui.layer;
@@ -342,13 +470,19 @@
             
             // 加载统计数据
             loadStatistics();
+            
+            // 恢复侧边栏状态
+            var savedState = localStorage.getItem('sidebarCollapsed');
+            if (savedState === 'true') {
+                toggleSidebar();
+            }
         });
 
         // 检查登录状态
         function checkLogin() {
             var token = localStorage.getItem('token');
             if (!token) {
-                window.location.href = '/tsm/login';
+                window.location.href = '/login';
                 return;
             }
         }
@@ -378,7 +512,7 @@
                 return;
             }
             
-            fetch('/tsm/api/auth/userinfo', {
+            fetch('/api/auth/userinfo', {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token
@@ -419,7 +553,7 @@
             var token = localStorage.getItem('token');
             if (!token) return;
             
-            fetch('/tsm/api/dashboard/statistics', {
+            fetch('/api/dashboard/statistics', {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token
@@ -462,7 +596,7 @@
         // 加载按钮权限
         function loadButtonPermissions() {
             var token = localStorage.getItem('token');
-            fetch('/tsm/api/auth/user-buttons/dashboard', {
+            fetch('/api/auth/user-buttons/dashboard', {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token
@@ -591,11 +725,88 @@
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
                     layer.msg('退出成功', {icon: 1}, function(){
-                        window.location.href = '/tsm/login';
+                        window.location.href = '/login';
                     });
                     layer.close(index);
                 });
             });
+        }
+
+        // 侧边栏收缩功能
+        var sidebarCollapsed = false;
+        
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            var toggleIcon = document.getElementById('toggleIcon');
+            var mainContent = document.querySelector('.main-content');
+            
+            if (sidebarCollapsed) {
+                // 展开侧边栏
+                sidebar.classList.remove('collapsed');
+                toggleIcon.className = 'layui-icon layui-icon-shrink-right';
+                if (mainContent) {
+                    mainContent.classList.remove('collapsed');
+                }
+                sidebarCollapsed = false;
+            } else {
+                // 收起侧边栏
+                sidebar.classList.add('collapsed');
+                toggleIcon.className = 'layui-icon layui-icon-spread-left';
+                if (mainContent) {
+                    mainContent.classList.add('collapsed');
+                }
+                sidebarCollapsed = true;
+            }
+            
+            // 保存状态到localStorage
+            localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
+        }
+
+        // 导航点击处理
+        function loadContent(page, title) {
+            // 更新面包屑
+            if (typeof updateBreadcrumb === 'function') {
+                updateBreadcrumb(title, page);
+            }
+            
+            // 更新导航状态
+            updateNavState(page);
+            
+            // 加载内容
+            layui.use('layer', function(){
+                var layer = layui.layer;
+                layer.msg('加载页面: ' + (title || page), {icon: 1});
+            });
+        }
+        
+        // 更新导航状态
+        function updateNavState(page) {
+            // 移除所有当前状态
+            var navItems = document.querySelectorAll('.layui-nav-tree .layui-nav-item');
+            navItems.forEach(function(item) {
+                item.classList.remove('layui-this');
+            });
+            
+            var childItems = document.querySelectorAll('.layui-nav-tree .layui-nav-child dd');
+            childItems.forEach(function(item) {
+                item.classList.remove('layui-this');
+            });
+            
+            // 根据页面设置当前状态
+            var targetElement = document.querySelector('[onclick*="' + page + '"]');
+            if (targetElement) {
+                var parentLi = targetElement.closest('.layui-nav-item');
+                var parentDd = targetElement.closest('dd');
+                
+                if (parentDd) {
+                    // 子菜单项
+                    parentDd.classList.add('layui-this');
+                    parentLi.classList.add('layui-nav-itemed');
+                } else {
+                    // 主菜单项
+                    parentLi.classList.add('layui-this');
+                }
+            }
         }
     </script>
 </body>

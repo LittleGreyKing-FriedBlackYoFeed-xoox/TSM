@@ -1,7 +1,7 @@
 server:
-  port: 8086
+  port: 8080
   servlet:
-    context-path: /tsm
+    context-path: /
     encoding:
       charset: UTF-8
       enabled: true

@@ -3,6 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <style>
+        /* 灰白色系主题样式变量 */
+        :root {
+            --primary-color: #6c757d;
+            --secondary-color: #f8f9fa;
+            --accent-color: #495057;
+            --light-gray: #e9ecef;
+            --dark-gray: #343a40;
+            --white: #ffffff;
+            --border-color: #dee2e6;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+        
         /* 尾部样式 */
         .layui-footer {
             background: var(--white);
@@ -115,7 +130,7 @@
     <i class="layui-icon layui-icon-top"></i>
 </div>
 
-<script>
+<script th:inline="none">
     // 返回顶部功能
     function scrollToTop() {
         window.scrollTo({

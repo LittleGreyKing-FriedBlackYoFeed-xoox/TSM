@@ -4,50 +4,120 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户管理 - TSM</title>
-    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
-    <link rel="stylesheet" th:href="@{/static/css/common.css}">
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        /* 使用全局CSS变量 */
         .user-management {
-            padding: 20px;
+            padding: 24px;
+            background: transparent;
         }
         
         .search-form {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: var(--white);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px var(--shadow-light);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .search-form:hover {
+            box-shadow: 0 8px 24px var(--shadow-medium);
         }
         
         .table-container {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-light);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
         }
         
         .table-header {
-            padding: 20px;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--white) 100%);
+        }
+        
+        .table-header h3 {
+            margin: 0;
+            color: var(--accent-color);
+            font-weight: 600;
+            font-size: 18px;
         }
         
         .status-enabled {
-            color: #52c41a;
+            color: var(--success-color);
+            font-weight: 600;
         }
         
         .status-disabled {
-            color: #ff4d4f;
+            color: var(--danger-color);
+            font-weight: 600;
         }
         
         .avatar-placeholder {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: #f0f0f0;
+            background: linear-gradient(135deg, var(--light-gray) 0%, var(--secondary-color) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #999;
+            color: var(--primary-color);
             font-size: 16px;
+            font-weight: 600;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-placeholder:hover {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: var(--white);
+            transform: scale(1.1);
+        }
+        
+        /* 搜索表单样式增强 */
+        .search-form .layui-form-label {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+        
+        .search-form .layui-btn {
+            margin-right: 8px;
+        }
+        
+        /* 表格工具栏按钮样式 */
+        .table-header .layui-btn {
+            margin-left: 8px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .user-management {
+                padding: 16px;
+            }
+            
+            .search-form, .table-container {
+                margin-bottom: 16px;
+            }
+            
+            .table-header {
+                padding: 16px;
+            }
+            
+            .table-header .layui-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .table-header .layui-col-md6 {
+                width: 100% !important;
+                text-align: left !important;
+            }
         }
     </style>
 </head>
@@ -161,9 +231,9 @@
         {{# } }}
     </script>
 
-    <script th:src="@{/static/layui/layui.js}"></script>
-    <script th:src="@{/static/js/common.js}"></script>
-    <script>
+    <script th:src="@{/layui/layui.js}"></script>
+    <script th:src="@{/js/common.js}"></script>
+    <script th:inline="none">
         layui.use(['table', 'form', 'layer', 'laydate'], function(){
             var table = layui.table;
             var form = layui.form;
@@ -173,7 +243,7 @@
             // 初始化表格
             var userTable = table.render({
                 elem: '#userTable',
-                url: '/tsm/api/user/list',
+                url: '/api/user/list',
                 page: true,
                 cols: [[
                     {type: 'checkbox', fixed: 'left'},
@@ -222,7 +292,7 @@
                         return item.id;
                     });
                     
-                    fetch('/tsm/api/user/batch', {
+                    fetch('/api/user/batch', {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json'
@@ -254,7 +324,7 @@
                     showUserForm('edit', data);
                 } else if(obj.event === 'delete'){
                     layer.confirm('确定要删除该用户吗？', function(index){
-                        fetch('/tsm/api/user/' + data.id, {
+                        fetch('/api/user/' + data.id, {
                             method: 'DELETE'
                         })
                         .then(response => response.json())
@@ -274,7 +344,7 @@
                     });
                 } else if(obj.event === 'resetPassword'){
                     layer.confirm('确定要重置该用户的密码吗？重置后密码为：123456', function(index){
-                        fetch('/tsm/api/user/' + data.id + '/reset-password', {
+                        fetch('/api/user/' + data.id + '/reset-password', {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -300,7 +370,7 @@
                     var action = obj.event === 'enable' ? '启用' : '禁用';
                     
                     layer.confirm('确定要' + action + '该用户吗？', function(index){
-                        fetch('/tsm/api/user/' + data.id + '/status', {
+                        fetch('/api/user/' + data.id + '/status', {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -333,7 +403,7 @@
                         <div class="layui-form-item">
                             <label class="layui-form-label">用户名</label>
                             <div class="layui-input-block">
-                                <input type="text" name="username" required lay-verify="required" placeholder="请输入用户名" class="layui-input" ${type === 'edit' ? 'readonly' : ''}>
+                                <input type="text" name="username" required lay-verify="required" placeholder="请输入用户名" class="layui-input" ` + (type === 'edit' ? 'readonly' : '') + `>
                             </div>
                         </div>
                         <div class="layui-form-item">
@@ -354,14 +424,14 @@
                                 <input type="text" name="phone" lay-verify="phone" placeholder="请输入手机号" class="layui-input">
                             </div>
                         </div>
-                        ${type === 'add' ? `
+                        ` + (type === 'add' ? `
                         <div class="layui-form-item">
                             <label class="layui-form-label">密码</label>
                             <div class="layui-input-block">
                                 <input type="password" name="password" placeholder="请输入密码（默认：123456）" class="layui-input">
                             </div>
                         </div>
-                        ` : ''}
+                        ` : '') + `
                         <div class="layui-form-item">
                             <label class="layui-form-label">状态</label>
                             <div class="layui-input-block">
@@ -404,7 +474,7 @@
                         
                         // 表单提交事件
                         form.on('submit(submitUser)', function(formData){
-                            var url = type === 'add' ? '/tsm/api/user/create' : '/tsm/api/user/update';
+                            var url = type === 'add' ? '/api/user/create' : '/api/user/update';
                             var method = type === 'add' ? 'POST' : 'PUT';
                             
                             if (type === 'edit') {

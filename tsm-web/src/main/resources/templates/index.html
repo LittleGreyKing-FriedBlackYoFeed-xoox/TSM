@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TSM</title>
-    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <link rel="stylesheet" href="/layui/css/layui.css">
     <style>
         /* 灰白色系主题变量 */
         :root {
@@ -180,13 +180,13 @@
                 </div>
                 <div class="subtitle">分布式后台管理系统</div>
                 <div class="btn-group">
-                    <a href="/tsm/login" class="btn">
+                    <a href="/login" class="btn">
                         <i class="layui-icon layui-icon-user" style="margin-right: 5px;"></i>
                         登录系统
                     </a>
-                    <a href="/tsm/main" class="btn btn-outline">
+                    <a href="/user/list" class="btn btn-outline">
                         <i class="layui-icon layui-icon-console" style="margin-right: 5px;"></i>
-                        进入主页
+                        用户管理
                     </a>
                 </div>
                 <div class="loading" id="loading">
@@ -200,7 +200,7 @@
         <div th:replace="~{fragments/footer :: footer}"></div>
     </div>
 
-    <script src="/tsm/layui/layui.js"></script>
+    <script src="/layui/layui.js"></script>
     <script>
         // 检查登录状态并自动跳转
         document.addEventListener('DOMContentLoaded', function() {
@@ -208,7 +208,7 @@
             if (token) {
                 document.getElementById('loading').style.display = 'block';
                 setTimeout(function() {
-                    window.location.href = '/tsm/main';
+                    window.location.href = '/user/list';
                 }, 1000);
             }
         });

@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 用户管理控制器
+ * 用户管理API控制器
+ * 负责用户相关的REST API接口
  */
 @RestController
 @RequestMapping("/api/user")

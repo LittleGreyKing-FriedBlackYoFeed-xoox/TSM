@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TSM - 登录</title>
-    <link rel="stylesheet" href="/tsm/layui/css/layui.css">
+    <link rel="stylesheet" href="/layui/css/layui.css">
     <style>
         /* 灰白色系主题变量 */
         :root {
@@ -278,15 +278,15 @@
         <div th:replace="~{fragments/footer :: footer}"></div>
     </div>
 
-    <script src="/tsm/layui/layui.js"></script>
-    <script>
+    <script src="/layui/layui.js"></script>
+    <script th:inline="none">
         layui.use(['form', 'layer'], function(form, layer){
             // 监听提交
             form.on('submit(login)', function(data){
                 var loadIndex = layer.load(2, {shade: [0.3, '#000']});
                 
                 // 发送登录请求
-                fetch('/tsm/api/auth/login', {
+                fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -302,7 +302,7 @@
                         localStorage.setItem('user', JSON.stringify(result.data.user));
                         
                         layer.msg('登录成功', {icon: 1}, function(){
-                            window.location.href = '/tsm/main';
+                            window.location.href = '/main';
                         });
                     } else {
                         layer.msg(result.message || '登录失败', {icon: 2});

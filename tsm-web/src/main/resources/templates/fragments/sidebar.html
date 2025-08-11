@@ -126,7 +126,7 @@
 </head>
 
 <!-- 侧边栏片段 -->
-<div th:fragment="sidebar" class="layui-side layui-bg-black" id="sidebar">
+<div th:fragment="sidebar" class="layui-side" id="sidebar">
     <div class="sidebar-toggle" onclick="toggleSidebar()">
         <i class="layui-icon layui-icon-shrink-right" id="toggleIcon"></i>
     </div>
@@ -146,9 +146,9 @@
                     <span>用户管理</span>
                 </a>
                 <dl class="layui-nav-child">
-                    <dd><a href="/tsm/user-management">用户管理</a></dd>
-                    <dd><a href="javascript:;" onclick="loadContent('user-add', '添加用户')">添加用户</a></dd>
-                    <dd><a href="javascript:;" onclick="loadContent('user-import', '批量导入')">批量导入</a></dd>
+                    <dd><a href="/user-management">用户管理</a></dd>
+                    <dd><a href="/add-user">添加用户</a></dd>
+                    <dd><a href="/batch-import">批量导入</a></dd>
                 </dl>
             </li>
             
@@ -227,7 +227,7 @@
     </div>
 </div>
 
-<script>
+<script th:inline="none">
     // 侧边栏折叠功能
     var sidebarCollapsed = false;
     

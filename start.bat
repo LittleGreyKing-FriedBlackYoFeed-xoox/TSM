@@ -10,5 +10,5 @@ start "TSM-Web" mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 echo TSM Application is starting...
 echo Please wait for the application to fully start before accessing it.
-echo Access URL: http://localhost:8080/tsm
+echo Access URL: http://localhost:8080
 pause
