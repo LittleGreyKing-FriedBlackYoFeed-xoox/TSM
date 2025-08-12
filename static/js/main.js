@@ -1,349 +1,655 @@
-/**
- * TSM - 主页面JavaScript
- * 包含主页面的所有功能逻辑
- */
+// API 基础URL
+const API_BASE = '/api';
 
-layui.use(['element', 'layer', 'util'], function(){
-    var element = layui.element;
-    var layer = layui.layer;
-    var util = layui.util;
-
-    // 页面初始化
-    $(document).ready(function() {
-        // 检查登录状态
-        checkLoginStatus();
-        
-        // 加载用户信息
-        loadUserInfo();
-        
-        // 加载统计数据
-        loadStatistics();
-        
-        // 加载按钮权限
-        loadButtonPermissions();
-        
-        // 初始化面包屑导航
-        initBreadcrumb();
+// 用户管理功能
+function getAllUsers() {
+    $.ajax({
+        url: API_BASE + '/user/list',
+        method: 'GET',
+        success: function(data) {
+            $('#userResult').html('<h4>所有用户:</h4><pre>' + JSON.stringify(data, null, 2) + '</pre>');
+        },
+        error: function(xhr, status, error) {
+            $('#userResult').html('<div style="color: red;">获取用户列表失败: ' + error + '</div>');
+        }
     });
+}
 
-    /**
-     * 检查登录状态
-     */
-    function checkLoginStatus() {
-        var token = localStorage.getItem('token');
-        if (!token) {
-            layer.msg('请先登录', {icon: 2}, function(){
-                window.location.href = '/tsm/login';
-            });
+function showAddUserForm() {
+    hideAllForms();
+    $('#addUserForm').show();
+}
+
+function hideAddUserForm() {
+    $('#addUserForm').hide();
+    clearUserForm();
+}
+
+function addUser() {
+    const username = $('#newUsername').val();
+    const password = $('#newPassword').val();
+    const nickname = $('#newNickname').val();
+    const email = $('#newEmail').val();
+    
+    if (!username || !password) {
+        layui.layer.msg('用户名和密码不能为空');
+        return;
+    }
+    
+    const userData = {
+        username: username,
+        password: password,
+        nickname: nickname,
+        email: email
+    };
+    
+    console.log('添加用户:', userData);
+    
+    $.ajax({
+        url: '/api/user/add',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(userData),
+        success: function(response) {
+            console.log('用户添加成功:', response);
+            layui.layer.msg('用户添加成功', {icon: 1});
+            // 清空表单
+            $('#newUsername').val('');
+            $('#newPassword').val('');
+            $('#newNickname').val('');
+            $('#newEmail').val('');
+            // 返回用户列表
+            showUserManagement();
+        },
+        error: function(xhr, status, error) {
+            console.error('添加用户失败:', error);
+            layui.layer.msg('添加用户失败: ' + (xhr.responseText || error), {icon: 2});
+        }
+    });
+}
+
+function showUpdateUserForm() {
+    hideAllForms();
+    $('#updateUserForm').show();
+}
+
+function hideUpdateUserForm() {
+    $('#updateUserForm').hide();
+    clearUserForm();
+}
+
+function updateUser() {
+    const userId = $('#updateUserId').val();
+    const username = $('#updateUsername').val();
+    const nickname = $('#updateNickname').val();
+    const email = $('#updateEmail').val();
+    
+    if (!username) {
+        layui.layer.msg('用户名不能为空');
+        return;
+    }
+    
+    const userData = {
+        id: userId,
+        username: username,
+        nickname: nickname,
+        email: email
+    };
+    
+    console.log('更新用户:', userData);
+    
+    $.ajax({
+        url: '/api/user/update',
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(userData),
+        success: function(response) {
+            console.log('用户更新成功:', response);
+            layui.layer.msg('用户更新成功', {icon: 1});
+            showUserManagement();
+        },
+        error: function(xhr, status, error) {
+            console.error('更新用户失败:', error);
+            layui.layer.msg('更新用户失败: ' + (xhr.responseText || error), {icon: 2});
+        }
+    });
+}
+
+function showDeleteUserForm() {
+    hideAllForms();
+    $('#deleteUserForm').show();
+}
+
+function hideDeleteUserForm() {
+    $('#deleteUserForm').hide();
+    clearUserForm();
+}
+
+function deleteUser(userId) {
+    layui.layer.confirm('确定要删除这个用户吗？', {
+        btn: ['确定', '取消'],
+        icon: 3,
+        title: '删除确认'
+    }, function(index) {
+        $.ajax({
+            url: '/api/user/delete/' + userId,
+            type: 'DELETE',
+            success: function(response) {
+                console.log('用户删除成功:', response);
+                layui.layer.msg('用户删除成功', {icon: 1});
+                loadUsers();
+                layui.layer.close(index);
+            },
+            error: function(xhr, status, error) {
+                console.error('删除用户失败:', error);
+                layui.layer.msg('删除用户失败: ' + (xhr.responseText || error), {icon: 2});
+            }
+        });
+    });
+}
+
+// 权限管理功能
+function getAllRoles() {
+    $.ajax({
+        url: API_BASE + '/role/list',
+        method: 'GET',
+        success: function(data) {
+            $('#permissionResult').html('<h4>所有角色:</h4><pre>' + JSON.stringify(data, null, 2) + '</pre>');
+        },
+        error: function(xhr, status, error) {
+            $('#permissionResult').html('<div style="color: red;">获取角色列表失败: ' + error + '</div>');
+        }
+    });
+}
+
+function getAllPermissions() {
+    $.ajax({
+        url: API_BASE + '/permission/list',
+        method: 'GET',
+        success: function(data) {
+            $('#permissionResult').html('<h4>所有权限:</h4><pre>' + JSON.stringify(data, null, 2) + '</pre>');
+        },
+        error: function(xhr, status, error) {
+            $('#permissionResult').html('<div style="color: red;">获取权限列表失败: ' + error + '</div>');
+        }
+    });
+}
+
+function showAddRoleForm() {
+    hideAllForms();
+    $('#addRoleForm').show();
+}
+
+function hideAddRoleForm() {
+    $('#addRoleForm').hide();
+    clearPermissionForm();
+}
+
+function addRole() {
+    const name = $('#newRoleName').val();
+    const code = $('#newRoleCode').val();
+    const description = $('#newRoleDescription').val();
+    
+    if (!name || !code) {
+        layui.layer.msg('角色名称和编码不能为空');
+        return;
+    }
+    
+    const roleData = {
+        name: name,
+        code: code,
+        description: description
+    };
+    
+    console.log('添加角色:', roleData);
+    
+    $.ajax({
+        url: '/api/role/add',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(roleData),
+        success: function(response) {
+            console.log('角色添加成功:', response);
+            layui.layer.msg('角色添加成功', {icon: 1});
+            // 清空表单
+            $('#newRoleName').val('');
+            $('#newRoleCode').val('');
+            $('#newRoleDescription').val('');
+            // 返回角色列表
+            showRoleManagement();
+        },
+        error: function(xhr, status, error) {
+            console.error('添加角色失败:', error);
+            layui.layer.msg('添加角色失败: ' + (xhr.responseText || error), {icon: 2});
+        }
+    });
+}
+
+function showAddPermissionForm() {
+    hideAllForms();
+    $('#addPermissionForm').show();
+}
+
+function hideAddPermissionForm() {
+    $('#addPermissionForm').hide();
+    clearPermissionForm();
+}
+
+function addPermission() {
+    const name = $('#newPermissionName').val();
+    const code = $('#newPermissionCode').val();
+    const type = $('#newPermissionType').val();
+    const url = $('#newPermissionUrl').val();
+    
+    if (!name || !code || !type) {
+        layui.layer.msg('权限名称、编码和类型不能为空');
+        return;
+    }
+    
+    const permissionData = {
+        name: name,
+        code: code,
+        type: type,
+        url: url
+    };
+    
+    console.log('添加权限:', permissionData);
+    
+    $.ajax({
+        url: '/api/permission/add',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(permissionData),
+        success: function(response) {
+            console.log('权限添加成功:', response);
+            layui.layer.msg('权限添加成功', {icon: 1});
+            // 清空表单
+            $('#newPermissionName').val('');
+            $('#newPermissionCode').val('');
+            $('#newPermissionType').val('');
+            $('#newPermissionUrl').val('');
+            // 返回权限列表
+            showPermissionManagement();
+        },
+        error: function(xhr, status, error) {
+            console.error('添加权限失败:', error);
+            layui.layer.msg('添加权限失败: ' + (xhr.responseText || error), {icon: 2});
+        }
+    });
+}
+
+// 辅助函数
+function hideAllForms() {
+    $('#addUserForm').hide();
+    $('#updateUserForm').hide();
+    $('#deleteUserForm').hide();
+    $('#addRoleForm').hide();
+    $('#addPermissionForm').hide();
+}
+
+function clearUserForm() {
+    $('#newUsername').val('');
+    $('#newPassword').val('');
+    $('#newNickname').val('');
+    $('#updateUserId').val('');
+    $('#updateUsername').val('');
+    $('#updateNickname').val('');
+    $('#deleteUserId').val('');
+}
+
+function clearPermissionForm() {
+    $('#newRoleName').val('');
+    $('#newRoleDesc').val('');
+    $('#newPermissionName').val('');
+    $('#newPermissionDesc').val('');
+}
+
+// 全局变量
+let currentUsers = [];
+let currentRoles = [];
+let currentPermissions = [];
+
+// 页面加载完成后初始化
+$(document).ready(function() {
+    console.log('页面加载完成，开始初始化...');
+    
+    // 初始化 Layui
+    layui.use(['element', 'form', 'layer'], function(){
+        const element = layui.element;
+        const form = layui.form;
+        const layer = layui.layer;
+        
+        console.log('Layui 初始化完成');
+        
+        // 监听表单提交
+        form.on('submit(addUser)', function(data){
+            console.log('添加用户表单提交:', data.field);
+            addUser();
+            return false; // 阻止表单跳转
+        });
+        
+        form.on('submit(updateUser)', function(data){
+            console.log('更新用户表单提交:', data.field);
+            updateUser();
             return false;
-        }
-        return true;
-    }
-
-    /**
-     * 加载用户信息
-     */
-    function loadUserInfo() {
-        var user = localStorage.getItem('user');
-        if (user) {
-            try {
-                var userObj = JSON.parse(user);
-                $('#username').text(userObj.username || '用户');
-                
-                // 更新面包屑中的用户信息
-                if (window.updateBreadcrumbUser) {
-                    window.updateBreadcrumbUser(userObj);
-                }
-            } catch (e) {
-                console.error('解析用户信息失败:', e);
-            }
-        }
-    }
-
-    /**
-     * 加载统计数据
-     */
-    function loadStatistics() {
-        // 模拟统计数据，实际项目中应该从API获取
-        var stats = {
-            userCount: 156,
-            roleCount: 8,
-            permissionCount: 45,
-            buttonCount: 128
-        };
-
-        // 动画效果更新数字
-        animateNumber('#userCount', stats.userCount);
-        animateNumber('#roleCount', stats.roleCount);
-        animateNumber('#permissionCount', stats.permissionCount);
-        animateNumber('#buttonCount', stats.buttonCount);
-
-        // 如果有API，使用以下代码
-        /*
-        fetch('/tsm/api/statistics', {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('token'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.code === 200) {
-                animateNumber('#userCount', data.data.userCount);
-                animateNumber('#roleCount', data.data.roleCount);
-                animateNumber('#permissionCount', data.data.permissionCount);
-                animateNumber('#buttonCount', data.data.buttonCount);
-            }
-        })
-        .catch(error => {
-            console.error('加载统计数据失败:', error);
         });
-        */
-    }
-
-    /**
-     * 数字动画效果
-     */
-    function animateNumber(selector, targetNumber) {
-        var $element = $(selector);
-        var currentNumber = 0;
-        var increment = Math.ceil(targetNumber / 50);
         
-        var timer = setInterval(function() {
-            currentNumber += increment;
-            if (currentNumber >= targetNumber) {
-                currentNumber = targetNumber;
-                clearInterval(timer);
-            }
-            $element.text(currentNumber);
-        }, 30);
-    }
-
-    /**
-     * 加载按钮权限
-     */
-    function loadButtonPermissions() {
-        var token = localStorage.getItem('token');
-        if (!token) return;
-
-        // 模拟按钮权限数据
-        var permissions = ['add_user', 'edit_user', 'view_user', 'export_data'];
-        updateButtonDisplay(permissions);
-
-        // 如果有API，使用以下代码
-        /*
-        fetch('/tsm/api/user/buttons', {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.code === 200) {
-                updateButtonDisplay(data.data);
-            }
-        })
-        .catch(error => {
-            console.error('加载按钮权限失败:', error);
+        form.on('submit(addRole)', function(data){
+            console.log('添加角色表单提交:', data.field);
+            addRole();
+            return false;
         });
-        */
-    }
-
-    /**
-     * 更新按钮显示
-     */
-    function updateButtonDisplay(permissions) {
-        var buttonContainer = $('#buttonContainer');
-        var buttons = buttonContainer.find('.demo-button');
         
-        // 按钮权限映射
-        var buttonPermissions = {
-            'add_user': 0,      // 新增用户
-            'edit_user': 1,     // 编辑用户
-            'delete_user': 2,   // 删除用户
-            'view_user': 3,     // 查看用户
-            'export_data': 4,   // 导出数据
-            'import_data': 5,   // 导入数据
-            'assign_permission': 6  // 权限分配
-        };
-
-        // 隐藏所有按钮
-        buttons.hide();
-
-        // 根据权限显示按钮
-        permissions.forEach(function(permission) {
-            var buttonIndex = buttonPermissions[permission];
-            if (buttonIndex !== undefined) {
-                buttons.eq(buttonIndex).show().addClass('fadeInUp');
-            }
+        form.on('submit(addPermission)', function(data){
+            console.log('添加权限表单提交:', data.field);
+            addPermission();
+            return false;
         });
-
-        // 如果没有权限，显示提示
-        if (permissions.length === 0) {
-            buttonContainer.html('<div style="text-align: center; color: var(--primary-color); padding: 20px;">暂无按钮权限</div>');
-        }
-    }
-
-    /**
-     * 初始化面包屑导航
-     */
-    function initBreadcrumb() {
-        if (window.addBreadcrumb) {
-            window.addBreadcrumb('首页', '/tsm/main');
-        }
-    }
-
-    /**
-     * 显示用户信息
-     */
-    window.showUserInfo = function() {
-        var user = localStorage.getItem('user');
-        if (user) {
-            try {
-                var userObj = JSON.parse(user);
-                layer.open({
-                    type: 1,
-                    title: '个人信息',
-                    area: ['400px', '300px'],
-                    content: `
-                        <div style="padding: 20px;">
-                            <div style="margin-bottom: 15px;">
-                                <strong>用户名：</strong>${userObj.username || '未知'}
-                            </div>
-                            <div style="margin-bottom: 15px;">
-                                <strong>角色：</strong>${userObj.roleName || '未分配'}
-                            </div>
-                            <div style="margin-bottom: 15px;">
-                                <strong>最后登录：</strong>${new Date().toLocaleString()}
-                            </div>
-                            <div style="text-align: center; margin-top: 20px;">
-                                <button class="layui-btn layui-btn-sm" onclick="changePassword()">修改密码</button>
-                            </div>
-                        </div>
-                    `
-                });
-            } catch (e) {
-                layer.msg('用户信息解析失败', {icon: 2});
-            }
-        }
-    };
-
-    /**
-     * 修改密码
-     */
-    window.changePassword = function() {
-        layer.open({
-            type: 1,
-            title: '修改密码',
-            area: ['400px', '350px'],
-            content: `
-                <form class="layui-form" style="padding: 20px;">
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">原密码</label>
-                        <div class="layui-input-block">
-                            <input type="password" name="oldPassword" required lay-verify="required" 
-                                   placeholder="请输入原密码" class="layui-input">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">新密码</label>
-                        <div class="layui-input-block">
-                            <input type="password" name="newPassword" required lay-verify="required" 
-                                   placeholder="请输入新密码" class="layui-input">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">确认密码</label>
-                        <div class="layui-input-block">
-                            <input type="password" name="confirmPassword" required lay-verify="required" 
-                                   placeholder="请确认新密码" class="layui-input">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <div class="layui-input-block">
-                            <button class="layui-btn" lay-submit lay-filter="changePassword">确认修改</button>
-                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-                        </div>
-                    </div>
-                </form>
-            `,
-            success: function(layero, index) {
-                // 重新渲染表单
-                layui.form.render();
-                
-                // 监听表单提交
-                layui.form.on('submit(changePassword)', function(data) {
-                    // 这里应该调用修改密码的API
-                    layer.msg('密码修改功能待实现', {icon: 1});
-                    layer.close(index);
-                    return false;
-                });
-            }
-        });
-    };
-
-    /**
-     * 退出登录
-     */
-    window.logout = function() {
-        layer.confirm('确定要退出登录吗？', {
-            icon: 3,
-            title: '确认退出'
-        }, function(index) {
-            // 清除本地存储
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            
-            layer.msg('退出成功', {icon: 1}, function(){
-                window.location.href = '/tsm/login';
-            });
-            
-            layer.close(index);
-        });
-    };
-
-    /**
-     * 加载内容
-     */
-    window.loadContent = function(type) {
-        // 更新面包屑
-        var breadcrumbMap = {
-            'dashboard': '首页',
-            'user': '用户列表',
-            'role': '角色管理',
-            'permission': '权限列表',
-            'button': '按钮管理',
-            'permission-assign': '权限分配'
-        };
-        
-        if (window.addBreadcrumb && breadcrumbMap[type]) {
-            window.addBreadcrumb(breadcrumbMap[type], '#');
-        }
-        
-        // 这里可以实现具体的内容加载逻辑
-        layer.msg('加载 ' + (breadcrumbMap[type] || type) + ' 页面', {icon: 1});
-    };
-
-    // CSS动画类
-    var style = document.createElement('style');
-    style.textContent = `
-        .fadeInUp {
-            animation: fadeInUp 0.5s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    `;
-    document.head.appendChild(style);
+    });
+    
+    // 默认显示首页
+    showDashboard();
 });
+
+// 显示/隐藏不同的管理区域
+function showDashboard() {
+    hideAllSections();
+    $('#dashboard').show();
+    loadDashboardData();
+}
+
+function showUserManagement() {
+    hideAllSections();
+    $('#user-management').show();
+    loadUsers();
+}
+
+function showAddUser() {
+    hideAllSections();
+    $('#add-user-form').show();
+}
+
+function showRoleManagement() {
+    hideAllSections();
+    $('#role-management').show();
+    loadRoles();
+}
+
+function showAddRole() {
+    hideAllSections();
+    $('#add-role-form').show();
+}
+
+function showPermissionManagement() {
+    hideAllSections();
+    $('#permission-management').show();
+    loadPermissions();
+}
+
+function showAddPermission() {
+    hideAllSections();
+    $('#add-permission-form').show();
+}
+
+function hideAllSections() {
+    $('#main-content > div').hide();
+}
+
+// 加载首页数据
+function loadDashboardData() {
+    // 加载用户总数
+    $.ajax({
+        url: '/api/user/list',
+        type: 'GET',
+        success: function(response) {
+            $('#user-count').text(response.length);
+        },
+        error: function() {
+            $('#user-count').text('0');
+        }
+    });
+    
+    // 加载角色总数
+    $.ajax({
+        url: '/api/role/list',
+        type: 'GET',
+        success: function(response) {
+            $('#role-count').text(response.length);
+        },
+        error: function() {
+            $('#role-count').text('0');
+        }
+    });
+    
+    // 加载权限总数
+    $.ajax({
+        url: '/api/permission/list',
+        type: 'GET',
+        success: function(response) {
+            $('#permission-count').text(response.length);
+        },
+        error: function() {
+            $('#permission-count').text('0');
+        }
+    });
+}
+
+// 用户管理相关函数
+function loadUsers() {
+    console.log('开始加载用户列表...');
+    
+    $.ajax({
+        url: '/api/user/list',
+        type: 'GET',
+        success: function(response) {
+            console.log('用户列表加载成功:', response);
+            currentUsers = response;
+            displayUsers(response);
+        },
+        error: function(xhr, status, error) {
+            console.error('加载用户列表失败:', error);
+            layui.layer.msg('加载用户列表失败: ' + error);
+        }
+    });
+}
+
+function displayUsers(users) {
+    const userList = $('#user-list');
+    userList.empty();
+    
+    if (users && users.length > 0) {
+        users.forEach(user => {
+            const row = `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.nickname || ''}</td>
+                    <td>${user.email || ''}</td>
+                    <td><span class="layui-badge ${user.enabled ? 'layui-bg-green' : 'layui-bg-gray'}">${user.enabled ? '启用' : '禁用'}</span></td>
+                    <td>${user.createTime || ''}</td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs" onclick="editUser(${user.id})">
+                            <i class="layui-icon layui-icon-edit"></i> 编辑
+                        </button>
+                        <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteUser(${user.id})">
+                            <i class="layui-icon layui-icon-delete"></i> 删除
+                        </button>
+                    </td>
+                </tr>
+            `;
+            userList.append(row);
+        });
+    } else {
+        userList.append('<tr><td colspan="7" style="text-align: center; color: #999;">暂无用户数据</td></tr>');
+    }
+}
+
+function editUser(userId) {
+    const user = currentUsers.find(u => u.id === userId);
+    if (user) {
+        $('#updateUserId').val(user.id);
+        $('#updateUsername').val(user.username);
+        $('#updateNickname').val(user.nickname || '');
+        $('#updateEmail').val(user.email || '');
+        
+        hideAllSections();
+        $('#edit-user-form').show();
+    }
+}
+
+// 角色管理相关函数
+function loadRoles() {
+    console.log('开始加载角色列表...');
+    
+    $.ajax({
+        url: '/api/role/list',
+        type: 'GET',
+        success: function(response) {
+            console.log('角色列表加载成功:', response);
+            currentRoles = response;
+            displayRoles(response);
+        },
+        error: function(xhr, status, error) {
+            console.error('加载角色列表失败:', error);
+            layui.layer.msg('加载角色列表失败: ' + error);
+        }
+    });
+}
+
+function displayRoles(roles) {
+    const roleList = $('#role-list');
+    roleList.empty();
+    
+    if (roles && roles.length > 0) {
+        roles.forEach(role => {
+            const row = `
+                <tr>
+                    <td>${role.id}</td>
+                    <td>${role.name}</td>
+                    <td>${role.code}</td>
+                    <td>${role.description || ''}</td>
+                    <td><span class="layui-badge ${role.enabled ? 'layui-bg-green' : 'layui-bg-gray'}">${role.enabled ? '启用' : '禁用'}</span></td>
+                    <td>${role.createTime || ''}</td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs" onclick="editRole(${role.id})">
+                            <i class="layui-icon layui-icon-edit"></i> 编辑
+                        </button>
+                        <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteRole(${role.id})">
+                            <i class="layui-icon layui-icon-delete"></i> 删除
+                        </button>
+                    </td>
+                </tr>
+            `;
+            roleList.append(row);
+        });
+    } else {
+        roleList.append('<tr><td colspan="7" style="text-align: center; color: #999;">暂无角色数据</td></tr>');
+    }
+}
+
+function editRole(roleId) {
+    // TODO: 实现角色编辑功能
+    layui.layer.msg('角色编辑功能待实现');
+}
+
+function deleteRole(roleId) {
+    layui.layer.confirm('确定要删除这个角色吗？', {
+        btn: ['确定', '取消'],
+        icon: 3,
+        title: '删除确认'
+    }, function(index) {
+        $.ajax({
+            url: '/api/role/delete/' + roleId,
+            type: 'DELETE',
+            success: function(response) {
+                console.log('角色删除成功:', response);
+                layui.layer.msg('角色删除成功', {icon: 1});
+                loadRoles();
+                layui.layer.close(index);
+            },
+            error: function(xhr, status, error) {
+                console.error('删除角色失败:', error);
+                layui.layer.msg('删除角色失败: ' + (xhr.responseText || error), {icon: 2});
+            }
+        });
+    });
+}
+
+// 权限管理相关函数
+function loadPermissions() {
+    console.log('开始加载权限列表...');
+    
+    $.ajax({
+        url: '/api/permission/list',
+        type: 'GET',
+        success: function(response) {
+            console.log('权限列表加载成功:', response);
+            currentPermissions = response;
+            displayPermissions(response);
+        },
+        error: function(xhr, status, error) {
+            console.error('加载权限列表失败:', error);
+            layui.layer.msg('加载权限列表失败: ' + error);
+        }
+    });
+}
+
+function displayPermissions(permissions) {
+    const permissionList = $('#permission-list');
+    permissionList.empty();
+    
+    if (permissions && permissions.length > 0) {
+        permissions.forEach(permission => {
+            const row = `
+                <tr>
+                    <td>${permission.id}</td>
+                    <td>${permission.name}</td>
+                    <td>${permission.code}</td>
+                    <td><span class="layui-badge ${permission.type === 'MENU' ? 'layui-bg-blue' : 'layui-bg-orange'}">${permission.type}</span></td>
+                    <td>${permission.url || ''}</td>
+                    <td><span class="layui-badge ${permission.enabled ? 'layui-bg-green' : 'layui-bg-gray'}">${permission.enabled ? '启用' : '禁用'}</span></td>
+                    <td>${permission.createTime || ''}</td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs" onclick="editPermission(${permission.id})">
+                            <i class="layui-icon layui-icon-edit"></i> 编辑
+                        </button>
+                        <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deletePermission(${permission.id})">
+                            <i class="layui-icon layui-icon-delete"></i> 删除
+                        </button>
+                    </td>
+                </tr>
+            `;
+            permissionList.append(row);
+        });
+    } else {
+        permissionList.append('<tr><td colspan="8" style="text-align: center; color: #999;">暂无权限数据</td></tr>');
+    }
+}
+
+function editPermission(permissionId) {
+    // TODO: 实现权限编辑功能
+    layui.layer.msg('权限编辑功能待实现');
+}
+
+function deletePermission(permissionId) {
+    layui.layer.confirm('确定要删除这个权限吗？', {
+        btn: ['确定', '取消'],
+        icon: 3,
+        title: '删除确认'
+    }, function(index) {
+        $.ajax({
+            url: '/api/permission/delete/' + permissionId,
+            type: 'DELETE',
+            success: function(response) {
+                console.log('权限删除成功:', response);
+                layui.layer.msg('权限删除成功', {icon: 1});
+                loadPermissions();
+                layui.layer.close(index);
+            },
+            error: function(xhr, status, error) {
+                console.error('删除权限失败:', error);
+                layui.layer.msg('删除权限失败: ' + (xhr.responseText || error), {icon: 2});
+            }
+        });
+    });
+}
