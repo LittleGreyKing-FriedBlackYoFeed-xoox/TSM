@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>权限表单</title>
+    <style>
+        body {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .form-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .layui-form-label {
+            width: 120px;
+            font-weight: 500;
+        }
+        
+        .layui-input-block {
+            margin-left: 150px;
+        }
+        
+        .form-tips {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .required {
+            color: #ff5722;
+        }
+        
+        .icon-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .icon-item {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .icon-item:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+        
+        .icon-item.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        
+        .permission-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            margin-top: 15px;
+        }
+        
+        .permission-preview-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .permission-preview-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .permission-preview-label {
+            color: #666;
+        }
+        
+        .permission-preview-value {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .parent-info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        
+        .parent-info-title {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 5px;
+        }
+        
+        .type-dependent {
+            display: none;
+        }
+        
+        .type-dependent.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-title" id="formTitle">添加权限</div>
+        
+        <!-- 父级权限信息 -->
+        <div class="parent-info" id="parentInfo" style="display: none;">
+            <div class="parent-info-title">父级权限</div>
+            <div id="parentInfoContent"></div>
+        </div>
+        
+        <form class="layui-form" lay-filter="permissionForm">
+            <input type="hidden" name="id" id="permissionId">
+            <input type="hidden" name="parentId" id="parentId">
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span> 权限名称：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="permissionName" placeholder="请输入权限名称" 
+                           lay-verify="required" lay-reqText="权限名称不能为空" 
+                           class="layui-input" maxlength="50">
+                    <div class="form-tips">权限的显示名称，如：用户管理、添加用户等</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span> 权限编码：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="permissionCode" placeholder="请输入权限编码" 
+                           lay-verify="required|permissionCode" lay-reqText="权限编码不能为空" 
+                           class="layui-input" maxlength="100">
+                    <div class="form-tips">权限的唯一标识，如：system:user、system:user:add</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span> 权限类型：</label>
+                <div class="layui-input-block">
+                    <select name="type" lay-filter="typeSelect">
+                        <option value="">请选择权限类型</option>
+                        <option value="menu">菜单权限</option>
+                        <option value="button">按钮权限</option>
+                        <option value="api">接口权限</option>
+                    </select>
+                    <div class="form-tips">菜单权限用于页面访问控制，按钮权限用于操作控制，接口权限用于API访问控制</div>
+                </div>
+            </div>
+            
+            <!-- 菜单权限特有字段 -->
+            <div class="type-dependent menu-fields">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">菜单路径：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="path" placeholder="请输入菜单路径" 
+                               class="layui-input" maxlength="200">
+                        <div class="form-tips">前端路由路径，如：/system/user</div>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">组件路径：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="component" placeholder="请输入组件路径" 
+                               class="layui-input" maxlength="200">
+                        <div class="form-tips">Vue组件路径，如：system/user/index</div>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">是否外链：</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="isFrame" value="0" title="否" checked>
+                        <input type="radio" name="isFrame" value="1" title="是">
+                        <div class="form-tips">是否为外部链接</div>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">是否缓存：</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="isCache" value="0" title="否">
+                        <input type="radio" name="isCache" value="1" title="是" checked>
+                        <div class="form-tips">是否缓存该页面</div>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">显示状态：</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="visible" value="0" title="隐藏">
+                        <input type="radio" name="visible" value="1" title="显示" checked>
+                        <div class="form-tips">是否在菜单中显示</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 接口权限特有字段 -->
+            <div class="type-dependent api-fields">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">接口地址：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="apiUrl" placeholder="请输入接口地址" 
+                               class="layui-input" maxlength="200">
+                        <div class="form-tips">API接口地址，如：/api/system/user/list</div>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">请求方法：</label>
+                    <div class="layui-input-block">
+                        <select name="method">
+                            <option value="">请选择请求方法</option>
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                            <option value="PATCH">PATCH</option>
+                        </select>
+                        <div class="form-tips">HTTP请求方法</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">图标：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="icon" placeholder="请选择图标" 
+                           class="layui-input" readonly>
+                    <div class="form-tips">点击下方图标进行选择</div>
+                    <div class="icon-selector" id="iconSelector">
+                        <!-- 图标将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">排序：</label>
+                <div class="layui-input-block">
+                    <input type="number" name="sort" placeholder="请输入排序值" 
+                           class="layui-input" min="0" max="9999" value="0">
+                    <div class="form-tips">数值越小排序越靠前，默认为0</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="status" value="1" title="正常" checked>
+                    <input type="radio" name="status" value="0" title="禁用">
+                    <div class="form-tips">禁用状态的权限不会生效</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">备注：</label>
+                <div class="layui-input-block">
+                    <textarea name="remark" placeholder="请输入备注信息" 
+                              class="layui-textarea" maxlength="500"></textarea>
+                    <div class="form-tips">其他需要说明的信息</div>
+                </div>
+            </div>
+            
+            <!-- 权限预览 -->
+            <div class="permission-preview" id="permissionPreview" style="display: none;">
+                <div class="permission-preview-title">权限信息预览</div>
+                <div class="permission-preview-item">
+                    <span class="permission-preview-label">权限名称：</span>
+                    <span class="permission-preview-value" id="previewName">-</span>
+                </div>
+                <div class="permission-preview-item">
+                    <span class="permission-preview-label">权限编码：</span>
+                    <span class="permission-preview-value" id="previewCode">-</span>
+                </div>
+                <div class="permission-preview-item">
+                    <span class="permission-preview-label">权限类型：</span>
+                    <span class="permission-preview-value" id="previewType">-</span>
+                </div>
+                <div class="permission-preview-item">
+                    <span class="permission-preview-label">状态：</span>
+                    <span class="permission-preview-value" id="previewStatus">-</span>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        layui.use(['form', 'layer'], function(){
+            var form = layui.form;
+            var layer = layui.layer;
+            
+            // 获取URL参数
+            function getUrlParam(name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return unescape(r[2]);
+                return null;
+            }
+            
+            // 模拟权限数据
+            var permissionData = {
+                1: {
+                    id: 1,
+                    parentId: 0,
+                    permissionName: '系统管理',
+                    permissionCode: 'system',
+                    type: 'menu',
+                    path: '/system',
+                    component: 'Layout',
+                    icon: 'layui-icon-set',
+                    sort: 1,
+                    status: 1,
+                    isFrame: 0,
+                    isCache: 1,
+                    visible: 1,
+                    remark: '系统管理模块'
+                },
+                11: {
+                    id: 11,
+                    parentId: 1,
+                    permissionName: '用户管理',
+                    permissionCode: 'system:user',
+                    type: 'menu',
+                    path: '/system/user',
+                    component: 'system/user/index',
+                    icon: 'layui-icon-user',
+                    sort: 1,
+                    status: 1,
+                    isFrame: 0,
+                    isCache: 1,
+                    visible: 1,
+                    remark: '用户管理页面'
+                }
+            };
+            
+            // 常用图标列表
+            var iconList = [
+                'layui-icon-set', 'layui-icon-user', 'layui-icon-group', 'layui-icon-vercode',
+                'layui-icon-app', 'layui-icon-form', 'layui-icon-file', 'layui-icon-chart',
+                'layui-icon-table', 'layui-icon-list', 'layui-icon-home', 'layui-icon-console',
+                'layui-icon-website', 'layui-icon-component', 'layui-icon-template-1', 'layui-icon-engine',
+                'layui-icon-slider', 'layui-icon-date', 'layui-icon-layer', 'layui-icon-util',
+                'layui-icon-face-smile', 'layui-icon-upload', 'layui-icon-tree', 'layui-icon-senior',
+                'layui-icon-refresh', 'layui-icon-flag', 'layui-icon-theme', 'layui-icon-notice',
+                'layui-icon-website', 'layui-icon-console', 'layui-icon-face-surprised', 'layui-icon-template',
+                'layui-icon-read', 'layui-icon-survey', 'layui-icon-face-cry', 'layui-icon-time',
+                'layui-icon-ie', 'layui-icon-link', 'layui-icon-face-cry', 'layui-icon-diamond',
+                'layui-icon-log', 'layui-icon-key', 'layui-icon-api', 'layui-icon-location'
+            ];
+            
+            // 类型映射
+            var typeMap = {
+                'menu': '菜单权限',
+                'button': '按钮权限',
+                'api': '接口权限'
+            };
+            
+            // 获取参数
+            var permissionId = getUrlParam('id');
+            var parentId = getUrlParam('parentId');
+            var isEdit = permissionId && permissionData[permissionId];
+            
+            // 初始化
+            if (isEdit) {
+                document.getElementById('formTitle').textContent = '编辑权限';
+                loadPermissionData(permissionData[permissionId]);
+            } else if (parentId && parentId !== '0') {
+                document.getElementById('parentId').value = parentId;
+                showParentInfo(parentId);
+            }
+            
+            // 生成图标选择器
+            generateIconSelector();
+            
+            // 加载权限数据
+            function loadPermissionData(data) {
+                document.getElementById('permissionId').value = data.id;
+                document.getElementById('parentId').value = data.parentId;
+                
+                form.val('permissionForm', {
+                    permissionName: data.permissionName,
+                    permissionCode: data.permissionCode,
+                    type: data.type,
+                    path: data.path,
+                    component: data.component,
+                    apiUrl: data.apiUrl,
+                    method: data.method,
+                    icon: data.icon,
+                    sort: data.sort,
+                    status: data.status,
+                    isFrame: data.isFrame,
+                    isCache: data.isCache,
+                    visible: data.visible,
+                    remark: data.remark
+                });
+                
+                // 显示对应类型的字段
+                showTypeFields(data.type);
+                
+                // 设置选中的图标
+                if (data.icon) {
+                    selectIcon(data.icon);
+                }
+                
+                // 显示父级信息
+                if (data.parentId && data.parentId !== 0) {
+                    showParentInfo(data.parentId);
+                }
+                
+                updatePreview();
+            }
+            
+            // 显示父级权限信息
+            function showParentInfo(parentId) {
+                var parent = permissionData[parentId];
+                if (parent) {
+                    document.getElementById('parentInfo').style.display = 'block';
+                    document.getElementById('parentInfoContent').innerHTML = 
+                        parent.permissionName + ' (' + parent.permissionCode + ')';
+                }
+            }
+            
+            // 生成图标选择器
+            function generateIconSelector() {
+                var iconSelector = document.getElementById('iconSelector');
+                iconList.forEach(function(iconClass) {
+                    var iconItem = document.createElement('div');
+                    iconItem.className = 'icon-item';
+                    iconItem.innerHTML = '<i class="layui-icon ' + iconClass + '"></i>';
+                    iconItem.onclick = function() {
+                        selectIcon(iconClass);
+                    };
+                    iconSelector.appendChild(iconItem);
+                });
+            }
+            
+            // 选择图标
+            function selectIcon(iconClass) {
+                // 清除之前的选中状态
+                document.querySelectorAll('.icon-item').forEach(function(item) {
+                    item.classList.remove('selected');
+                });
+                
+                // 设置新的选中状态
+                var selectedItem = document.querySelector('.icon-item i.layui-icon.' + iconClass.replace('layui-icon-', 'layui-icon-'));
+                if (selectedItem) {
+                    selectedItem.parentElement.classList.add('selected');
+                }
+                
+                // 设置表单值
+                document.querySelector('input[name="icon"]').value = iconClass;
+                updatePreview();
+            }
+            
+            // 监听权限类型变化
+            form.on('select(typeSelect)', function(data) {
+                showTypeFields(data.value);
+                updatePreview();
+            });
+            
+            // 显示对应类型的字段
+            function showTypeFields(type) {
+                // 隐藏所有类型相关字段
+                document.querySelectorAll('.type-dependent').forEach(function(el) {
+                    el.classList.remove('show');
+                });
+                
+                // 显示对应类型的字段
+                if (type) {
+                    var typeFields = document.querySelector('.type-dependent.' + type + '-fields');
+                    if (typeFields) {
+                        typeFields.classList.add('show');
+                    }
+                }
+            }
+            
+            // 自定义验证规则
+            form.verify({
+                permissionCode: function(value) {
+                    if (!/^[a-zA-Z0-9:_-]+$/.test(value)) {
+                        return '权限编码只能包含字母、数字、冒号、下划线和横线';
+                    }
+                    if (value.length < 2) {
+                        return '权限编码长度不能少于2位';
+                    }
+                }
+            });
+            
+            // 监听表单字段变化，实时更新预览
+            document.querySelector('input[name="permissionName"]').addEventListener('input', updatePreview);
+            document.querySelector('input[name="permissionCode"]').addEventListener('input', updatePreview);
+            
+            // 监听状态变化
+            form.on('radio()', function(data) {
+                updatePreview();
+            });
+            
+            // 更新预览
+            function updatePreview() {
+                var permissionName = document.querySelector('input[name="permissionName"]').value;
+                var permissionCode = document.querySelector('input[name="permissionCode"]').value;
+                var type = document.querySelector('select[name="type"]').value;
+                var status = document.querySelector('input[name="status"]:checked')?.value;
+                
+                if (permissionName || permissionCode) {
+                    document.getElementById('permissionPreview').style.display = 'block';
+                    document.getElementById('previewName').textContent = permissionName || '-';
+                    document.getElementById('previewCode').textContent = permissionCode || '-';
+                    document.getElementById('previewType').textContent = typeMap[type] || '-';
+                    document.getElementById('previewStatus').textContent = status === '1' ? '正常' : '禁用';
+                } else {
+                    document.getElementById('permissionPreview').style.display = 'none';
+                }
+            }
+            
+            // 权限编码自动生成建议
+            document.querySelector('input[name="permissionName"]').addEventListener('input', function(e) {
+                var permissionName = e.target.value.trim();
+                var permissionCodeInput = document.querySelector('input[name="permissionCode"]');
+                var parentId = document.getElementById('parentId').value;
+                
+                // 只在新增模式且编码为空时自动生成
+                if (!isEdit && !permissionCodeInput.value.trim() && permissionName && parentId) {
+                    var parent = permissionData[parentId];
+                    if (parent) {
+                        var suggestion = parent.permissionCode + ':';
+                        
+                        // 简单的中文到英文映射
+                        var nameMap = {
+                            '管理': 'manage',
+                            '查看': 'view',
+                            '添加': 'add',
+                            '新增': 'add',
+                            '编辑': 'edit',
+                            '修改': 'edit',
+                            '删除': 'delete',
+                            '导出': 'export',
+                            '导入': 'import',
+                            '审核': 'audit',
+                            '分配': 'assign',
+                            '重置': 'reset',
+                            '用户': 'user',
+                            '角色': 'role',
+                            '权限': 'permission',
+                            '部门': 'dept',
+                            '岗位': 'post',
+                            '菜单': 'menu',
+                            '字典': 'dict',
+                            '参数': 'config',
+                            '通知': 'notice',
+                            '日志': 'log'
+                        };
+                        
+                        var codePart = '';
+                        for (var key in nameMap) {
+                            if (permissionName.includes(key)) {
+                                codePart = nameMap[key];
+                                break;
+                            }
+                        }
+                        
+                        if (codePart) {
+                            suggestion += codePart;
+                            permissionCodeInput.value = suggestion;
+                            updatePreview();
+                        }
+                    }
+                }
+            });
+            
+            // 提供给父页面调用的提交方法
+            window.submitForm = function(callback) {
+                // 验证表单
+                var permissionName = document.querySelector('input[name="permissionName"]').value.trim();
+                var permissionCode = document.querySelector('input[name="permissionCode"]').value.trim();
+                var type = document.querySelector('select[name="type"]').value;
+                
+                if (!permissionName) {
+                    layer.msg('请输入权限名称', {icon: 2});
+                    return;
+                }
+                
+                if (!permissionCode) {
+                    layer.msg('请输入权限编码', {icon: 2});
+                    return;
+                }
+                
+                if (!type) {
+                    layer.msg('请选择权限类型', {icon: 2});
+                    return;
+                }
+                
+                if (!/^[a-zA-Z0-9:_-]+$/.test(permissionCode)) {
+                    layer.msg('权限编码只能包含字母、数字、冒号、下划线和横线', {icon: 2});
+                    return;
+                }
+                
+                // 收集表单数据
+                var formData = {
+                    id: document.getElementById('permissionId').value,
+                    parentId: document.getElementById('parentId').value || 0,
+                    permissionName: permissionName,
+                    permissionCode: permissionCode,
+                    type: type,
+                    path: document.querySelector('input[name="path"]').value.trim(),
+                    component: document.querySelector('input[name="component"]').value.trim(),
+                    apiUrl: document.querySelector('input[name="apiUrl"]').value.trim(),
+                    method: document.querySelector('select[name="method"]').value,
+                    icon: document.querySelector('input[name="icon"]').value,
+                    sort: parseInt(document.querySelector('input[name="sort"]').value) || 0,
+                    status: parseInt(document.querySelector('input[name="status"]:checked').value),
+                    isFrame: parseInt(document.querySelector('input[name="isFrame"]:checked')?.value || 0),
+                    isCache: parseInt(document.querySelector('input[name="isCache"]:checked')?.value || 0),
+                    visible: parseInt(document.querySelector('input[name="visible"]:checked')?.value || 1),
+                    remark: document.querySelector('textarea[name="remark"]').value.trim()
+                };
+                
+                console.log('提交的权限数据：', formData);
+                
+                // 模拟提交延迟
+                setTimeout(function() {
+                    if (callback) {
+                        callback(formData);
+                    }
+                }, 500);
+            };
+        });
+    </script>
+</body>
+</html>

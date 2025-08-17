@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色表单</title>
+    <style>
+        body {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .form-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .layui-form-label {
+            width: 100px;
+            font-weight: 500;
+        }
+        
+        .layui-input-block {
+            margin-left: 130px;
+        }
+        
+        .form-tips {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .required {
+            color: #ff5722;
+        }
+        
+        .role-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            margin-top: 10px;
+        }
+        
+        .role-preview-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .role-preview-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .role-preview-label {
+            color: #666;
+        }
+        
+        .role-preview-value {
+            color: #333;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-title" id="formTitle">添加角色</div>
+        
+        <form class="layui-form" lay-filter="roleForm">
+            <input type="hidden" name="id" id="roleId">
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span> 角色名称：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="roleName" placeholder="请输入角色名称" 
+                           lay-verify="required" lay-reqText="角色名称不能为空" 
+                           class="layui-input" maxlength="50">
+                    <div class="form-tips">角色的显示名称，如：部门经理、普通用户等</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span> 角色编码：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="roleCode" placeholder="请输入角色编码" 
+                           lay-verify="required|roleCode" lay-reqText="角色编码不能为空" 
+                           class="layui-input" maxlength="50">
+                    <div class="form-tips">角色的唯一标识，只能包含字母、数字和下划线，如：DEPT_MANAGER</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">角色描述：</label>
+                <div class="layui-input-block">
+                    <textarea name="description" placeholder="请输入角色描述" 
+                              class="layui-textarea" maxlength="200"></textarea>
+                    <div class="form-tips">详细描述该角色的职责和权限范围</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">排序：</label>
+                <div class="layui-input-block">
+                    <input type="number" name="sort" placeholder="请输入排序值" 
+                           class="layui-input" min="0" max="9999" value="0">
+                    <div class="form-tips">数值越小排序越靠前，默认为0</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="status" value="1" title="正常" checked>
+                    <input type="radio" name="status" value="0" title="禁用">
+                    <div class="form-tips">禁用状态的角色不能分配给用户</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">数据权限：</label>
+                <div class="layui-input-block">
+                    <select name="dataScope">
+                        <option value="1">全部数据权限</option>
+                        <option value="2" selected>自定义数据权限</option>
+                        <option value="3">本部门数据权限</option>
+                        <option value="4">本部门及以下数据权限</option>
+                        <option value="5">仅本人数据权限</option>
+                    </select>
+                    <div class="form-tips">控制该角色可以访问的数据范围</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">备注：</label>
+                <div class="layui-input-block">
+                    <textarea name="remark" placeholder="请输入备注信息" 
+                              class="layui-textarea" maxlength="500"></textarea>
+                    <div class="form-tips">其他需要说明的信息</div>
+                </div>
+            </div>
+            
+            <!-- 角色预览 -->
+            <div class="role-preview" id="rolePreview" style="display: none;">
+                <div class="role-preview-title">角色信息预览</div>
+                <div class="role-preview-item">
+                    <span class="role-preview-label">角色名称：</span>
+                    <span class="role-preview-value" id="previewName">-</span>
+                </div>
+                <div class="role-preview-item">
+                    <span class="role-preview-label">角色编码：</span>
+                    <span class="role-preview-value" id="previewCode">-</span>
+                </div>
+                <div class="role-preview-item">
+                    <span class="role-preview-label">状态：</span>
+                    <span class="role-preview-value" id="previewStatus">-</span>
+                </div>
+                <div class="role-preview-item">
+                    <span class="role-preview-label">数据权限：</span>
+                    <span class="role-preview-value" id="previewDataScope">-</span>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        layui.use(['form', 'layer'], function(){
+            var form = layui.form;
+            var layer = layui.layer;
+            
+            // 获取URL参数
+            function getUrlParam(name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return unescape(r[2]);
+                return null;
+            }
+            
+            // 模拟角色数据
+            var roleData = {
+                1: {
+                    id: 1,
+                    roleName: '超级管理员',
+                    roleCode: 'SUPER_ADMIN',
+                    description: '系统超级管理员，拥有所有权限',
+                    sort: 0,
+                    status: 1,
+                    dataScope: 1,
+                    remark: '系统默认角色，不可删除'
+                },
+                2: {
+                    id: 2,
+                    roleName: '部门经理',
+                    roleCode: 'DEPT_MANAGER',
+                    description: '部门经理，管理本部门用户和基础权限',
+                    sort: 1,
+                    status: 1,
+                    dataScope: 3,
+                    remark: '部门管理角色'
+                }
+            };
+            
+            // 数据权限映射
+            var dataScopeMap = {
+                '1': '全部数据权限',
+                '2': '自定义数据权限',
+                '3': '本部门数据权限',
+                '4': '本部门及以下数据权限',
+                '5': '仅本人数据权限'
+            };
+            
+            // 检查是否为编辑模式
+            var roleId = getUrlParam('id');
+            var isEdit = roleId && roleData[roleId];
+            
+            if (isEdit) {
+                document.getElementById('formTitle').textContent = '编辑角色';
+                loadRoleData(roleData[roleId]);
+            }
+            
+            // 加载角色数据
+            function loadRoleData(data) {
+                document.getElementById('roleId').value = data.id;
+                form.val('roleForm', {
+                    roleName: data.roleName,
+                    roleCode: data.roleCode,
+                    description: data.description,
+                    sort: data.sort,
+                    status: data.status,
+                    dataScope: data.dataScope,
+                    remark: data.remark
+                });
+                
+                // 如果是超级管理员，禁用某些字段
+                if (data.id === 1) {
+                    document.querySelector('input[name="roleCode"]').disabled = true;
+                    document.querySelector('input[name="status"][value="0"]').disabled = true;
+                }
+                
+                updatePreview();
+            }
+            
+            // 自定义验证规则
+            form.verify({
+                roleCode: function(value) {
+                    if (!/^[A-Z0-9_]+$/.test(value)) {
+                        return '角色编码只能包含大写字母、数字和下划线';
+                    }
+                    if (value.length < 2) {
+                        return '角色编码长度不能少于2位';
+                    }
+                }
+            });
+            
+            // 监听表单字段变化，实时更新预览
+            document.querySelector('input[name="roleName"]').addEventListener('input', updatePreview);
+            document.querySelector('input[name="roleCode"]').addEventListener('input', updatePreview);
+            
+            // 监听状态变化
+            form.on('radio()', function(data) {
+                updatePreview();
+            });
+            
+            // 监听下拉框变化
+            form.on('select()', function(data) {
+                updatePreview();
+            });
+            
+            // 更新预览
+            function updatePreview() {
+                var roleName = document.querySelector('input[name="roleName"]').value;
+                var roleCode = document.querySelector('input[name="roleCode"]').value;
+                var status = document.querySelector('input[name="status"]:checked')?.value;
+                var dataScope = document.querySelector('select[name="dataScope"]').value;
+                
+                if (roleName || roleCode) {
+                    document.getElementById('rolePreview').style.display = 'block';
+                    document.getElementById('previewName').textContent = roleName || '-';
+                    document.getElementById('previewCode').textContent = roleCode || '-';
+                    document.getElementById('previewStatus').textContent = status === '1' ? '正常' : '禁用';
+                    document.getElementById('previewDataScope').textContent = dataScopeMap[dataScope] || '-';
+                } else {
+                    document.getElementById('rolePreview').style.display = 'none';
+                }
+            }
+            
+            // 表单提交
+            form.on('submit()', function(data) {
+                return false; // 阻止默认提交
+            });
+            
+            // 提供给父页面调用的提交方法
+            window.submitForm = function(callback) {
+                // 验证表单
+                var roleName = document.querySelector('input[name="roleName"]').value.trim();
+                var roleCode = document.querySelector('input[name="roleCode"]').value.trim();
+                
+                if (!roleName) {
+                    layer.msg('请输入角色名称', {icon: 2});
+                    return;
+                }
+                
+                if (!roleCode) {
+                    layer.msg('请输入角色编码', {icon: 2});
+                    return;
+                }
+                
+                if (!/^[A-Z0-9_]+$/.test(roleCode)) {
+                    layer.msg('角色编码只能包含大写字母、数字和下划线', {icon: 2});
+                    return;
+                }
+                
+                // 检查角色编码是否重复（编辑时排除自己）
+                var existingRole = Object.values(roleData).find(role => 
+                    role.roleCode === roleCode && role.id != roleId
+                );
+                
+                if (existingRole) {
+                    layer.msg('角色编码已存在', {icon: 2});
+                    return;
+                }
+                
+                // 收集表单数据
+                var formData = {
+                    id: document.getElementById('roleId').value,
+                    roleName: roleName,
+                    roleCode: roleCode,
+                    description: document.querySelector('textarea[name="description"]').value.trim(),
+                    sort: parseInt(document.querySelector('input[name="sort"]').value) || 0,
+                    status: parseInt(document.querySelector('input[name="status"]:checked').value),
+                    dataScope: parseInt(document.querySelector('select[name="dataScope"]').value),
+                    remark: document.querySelector('textarea[name="remark"]').value.trim()
+                };
+                
+                console.log('提交的角色数据：', formData);
+                
+                // 模拟提交延迟
+                setTimeout(function() {
+                    if (callback) {
+                        callback(formData);
+                    }
+                }, 500);
+            };
+            
+            // 角色编码输入时自动转换为大写
+            document.querySelector('input[name="roleCode"]').addEventListener('input', function(e) {
+                e.target.value = e.target.value.toUpperCase();
+            });
+            
+            // 角色名称输入时自动生成编码建议
+            document.querySelector('input[name="roleName"]').addEventListener('input', function(e) {
+                var roleName = e.target.value.trim();
+                var roleCodeInput = document.querySelector('input[name="roleCode"]');
+                
+                // 只在新增模式且编码为空时自动生成
+                if (!isEdit && !roleCodeInput.value.trim() && roleName) {
+                    var suggestion = '';
+                    
+                    // 简单的中文到英文映射
+                    var nameMap = {
+                        '管理员': 'ADMIN',
+                        '经理': 'MANAGER',
+                        '用户': 'USER',
+                        '员工': 'EMPLOYEE',
+                        '主管': 'SUPERVISOR',
+                        '总监': 'DIRECTOR',
+                        '助理': 'ASSISTANT',
+                        '客服': 'SERVICE',
+                        '财务': 'FINANCE',
+                        '人事': 'HR',
+                        '技术': 'TECH',
+                        '销售': 'SALES',
+                        '市场': 'MARKETING'
+                    };
+                    
+                    for (var key in nameMap) {
+                        if (roleName.includes(key)) {
+                            suggestion += nameMap[key] + '_';
+                        }
+                    }
+                    
+                    if (suggestion) {
+                        suggestion = suggestion.slice(0, -1); // 移除最后的下划线
+                        roleCodeInput.value = suggestion;
+                        updatePreview();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

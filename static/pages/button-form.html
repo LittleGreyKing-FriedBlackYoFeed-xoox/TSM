@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>按钮权限表单</title>
+    <style>
+        body {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .form-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .layui-form-label {
+            width: 120px;
+            font-weight: 500;
+        }
+        
+        .layui-input-block {
+            margin-left: 150px;
+        }
+        
+        .form-tips {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .required {
+            color: #ff5722;
+        }
+        
+        .icon-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .icon-item {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .icon-item:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+        
+        .icon-item.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        
+        .permission-selector {
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .permission-tree {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .permission-tree li {
+            margin-bottom: 8px;
+        }
+        
+        .permission-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .permission-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .permission-item .layui-form-checkbox {
+            margin-right: 8px;
+        }
+        
+        .permission-children {
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+        
+        .button-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            margin-top: 15px;
+        }
+        
+        .button-preview-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .button-preview-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .button-preview-label {
+            color: #666;
+        }
+        
+        .button-preview-value {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .button-demo {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 10px;
+        }
+        
+        .code-example {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-title" id="formTitle">添加按钮权限</div>
+        
+        <form class="layui-form" lay-filter="buttonForm">
+            <input type="hidden" name="id" id="buttonId">
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span> 按钮名称：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="buttonName" placeholder="请输入按钮名称" 
+                           lay-verify="required" lay-reqText="按钮名称不能为空" 
+                           class="layui-input" maxlength="50">
+                    <div class="form-tips">按钮的显示名称，如：添加用户、编辑角色等</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span> 按钮编码：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="buttonCode" placeholder="请输入按钮编码" 
+                           lay-verify="required|buttonCode" lay-reqText="按钮编码不能为空" 
+                           class="layui-input" maxlength="100">
+                    <div class="form-tips">按钮的唯一标识，如：user:add、role:edit</div>
+                    <div class="code-example" id="codeExample" style="display: none;">
+                        建议编码格式：模块:操作，如：user:add、user:edit、user:delete
+                    </div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">按钮图标：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="buttonIcon" placeholder="请选择按钮图标" 
+                           class="layui-input" readonly>
+                    <div class="form-tips">点击下方图标进行选择</div>
+                    <div class="icon-selector" id="iconSelector">
+                        <!-- 图标将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">关联权限：</label>
+                <div class="layui-input-block">
+                    <div class="form-tips">选择该按钮关联的权限，用户需要拥有这些权限才能看到此按钮</div>
+                    <div class="permission-selector" id="permissionSelector">
+                        <ul class="permission-tree" id="permissionTree">
+                            <!-- 权限树将通过JavaScript动态生成 -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">描述：</label>
+                <div class="layui-input-block">
+                    <textarea name="description" placeholder="请输入按钮描述" 
+                              class="layui-textarea" maxlength="200"></textarea>
+                    <div class="form-tips">按钮的功能描述</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">排序：</label>
+                <div class="layui-input-block">
+                    <input type="number" name="sort" placeholder="请输入排序值" 
+                           class="layui-input" min="0" max="9999" value="0">
+                    <div class="form-tips">数值越小排序越靠前，默认为0</div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="status" value="1" title="正常" checked>
+                    <input type="radio" name="status" value="0" title="禁用">
+                    <div class="form-tips">禁用状态的按钮权限不会生效</div>
+                </div>
+            </div>
+            
+            <!-- 按钮预览 -->
+            <div class="button-preview" id="buttonPreview" style="display: none;">
+                <div class="button-preview-title">按钮信息预览</div>
+                <div class="button-preview-item">
+                    <span class="button-preview-label">按钮名称：</span>
+                    <span class="button-preview-value" id="previewName">-</span>
+                </div>
+                <div class="button-preview-item">
+                    <span class="button-preview-label">按钮编码：</span>
+                    <span class="button-preview-value" id="previewCode">-</span>
+                </div>
+                <div class="button-preview-item">
+                    <span class="button-preview-label">关联权限：</span>
+                    <span class="button-preview-value" id="previewPermissions">-</span>
+                </div>
+                <div class="button-preview-item">
+                    <span class="button-preview-label">状态：</span>
+                    <span class="button-preview-value" id="previewStatus">-</span>
+                </div>
+                <div class="button-demo" id="buttonDemo">
+                    <i class="layui-icon" id="demoIcon"></i>
+                    <span id="demoText">按钮预览</span>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        layui.use(['form', 'layer'], function(){
+            var form = layui.form;
+            var layer = layui.layer;
+            
+            // 获取URL参数
+            function getUrlParam(name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return unescape(r[2]);
+                return null;
+            }
+            
+            // 模拟按钮数据
+            var buttonData = {
+                1: {
+                    id: 1,
+                    buttonName: '添加用户',
+                    buttonCode: 'user:add',
+                    buttonIcon: 'layui-icon-add-1',
+                    permissions: [11],
+                    description: '添加新用户的按钮权限',
+                    sort: 1,
+                    status: 1
+                },
+                2: {
+                    id: 2,
+                    buttonName: '编辑用户',
+                    buttonCode: 'user:edit',
+                    buttonIcon: 'layui-icon-edit',
+                    permissions: [11],
+                    description: '编辑用户信息的按钮权限',
+                    sort: 2,
+                    status: 1
+                }
+            };
+            
+            // 模拟权限数据
+            var permissionData = [
+                {
+                    id: 1,
+                    permissionName: '系统管理',
+                    permissionCode: 'system',
+                    children: [
+                        {
+                            id: 11,
+                            permissionName: '用户管理',
+                            permissionCode: 'system:user'
+                        },
+                        {
+                            id: 12,
+                            permissionName: '角色管理',
+                            permissionCode: 'system:role'
+                        },
+                        {
+                            id: 13,
+                            permissionName: '权限管理',
+                            permissionCode: 'system:permission'
+                        },
+                        {
+                            id: 14,
+                            permissionName: '部门管理',
+                            permissionCode: 'system:dept'
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    permissionName: '监控管理',
+                    permissionCode: 'monitor',
+                    children: [
+                        {
+                            id: 21,
+                            permissionName: '在线用户',
+                            permissionCode: 'monitor:online'
+                        },
+                        {
+                            id: 22,
+                            permissionName: '系统日志',
+                            permissionCode: 'monitor:log'
+                        }
+                    ]
+                }
+            ];
+            
+            // 常用图标列表
+            var iconList = [
+                'layui-icon-add-1', 'layui-icon-edit', 'layui-icon-delete', 'layui-icon-search',
+                'layui-icon-refresh', 'layui-icon-export', 'layui-icon-import', 'layui-icon-download-circle',
+                'layui-icon-upload', 'layui-icon-save', 'layui-icon-close', 'layui-icon-ok',
+                'layui-icon-user', 'layui-icon-group', 'layui-icon-vercode', 'layui-icon-key',
+                'layui-icon-set', 'layui-icon-component', 'layui-icon-file', 'layui-icon-form',
+                'layui-icon-chart', 'layui-icon-table', 'layui-icon-list', 'layui-icon-home',
+                'layui-icon-console', 'layui-icon-website', 'layui-icon-app', 'layui-icon-template-1',
+                'layui-icon-engine', 'layui-icon-slider', 'layui-icon-date', 'layui-icon-layer',
+                'layui-icon-util', 'layui-icon-face-smile', 'layui-icon-tree', 'layui-icon-senior',
+                'layui-icon-flag', 'layui-icon-theme', 'layui-icon-notice', 'layui-icon-read',
+                'layui-icon-survey', 'layui-icon-time', 'layui-icon-ie', 'layui-icon-link',
+                'layui-icon-diamond', 'layui-icon-log', 'layui-icon-api', 'layui-icon-location'
+            ];
+            
+            // 获取参数
+            var buttonId = getUrlParam('id');
+            var isEdit = buttonId && buttonData[buttonId];
+            
+            // 初始化
+            if (isEdit) {
+                document.getElementById('formTitle').textContent = '编辑按钮权限';
+                loadButtonData(buttonData[buttonId]);
+            }
+            
+            // 生成图标选择器
+            generateIconSelector();
+            
+            // 生成权限树
+            generatePermissionTree();
+            
+            // 加载按钮数据
+            function loadButtonData(data) {
+                document.getElementById('buttonId').value = data.id;
+                
+                form.val('buttonForm', {
+                    buttonName: data.buttonName,
+                    buttonCode: data.buttonCode,
+                    buttonIcon: data.buttonIcon,
+                    description: data.description,
+                    sort: data.sort,
+                    status: data.status
+                });
+                
+                // 设置选中的图标
+                if (data.buttonIcon) {
+                    selectIcon(data.buttonIcon);
+                }
+                
+                // 设置选中的权限
+                if (data.permissions) {
+                    data.permissions.forEach(function(permId) {
+                        var checkbox = document.querySelector('input[name="permissions"][value="' + permId + '"]');
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                    form.render('checkbox');
+                }
+                
+                updatePreview();
+            }
+            
+            // 生成图标选择器
+            function generateIconSelector() {
+                var iconSelector = document.getElementById('iconSelector');
+                iconList.forEach(function(iconClass) {
+                    var iconItem = document.createElement('div');
+                    iconItem.className = 'icon-item';
+                    iconItem.innerHTML = '<i class="layui-icon ' + iconClass + '"></i>';
+                    iconItem.onclick = function() {
+                        selectIcon(iconClass);
+                    };
+                    iconSelector.appendChild(iconItem);
+                });
+            }
+            
+            // 生成权限树
+            function generatePermissionTree() {
+                var permissionTree = document.getElementById('permissionTree');
+                
+                permissionData.forEach(function(parent) {
+                    var parentLi = document.createElement('li');
+                    
+                    var parentDiv = document.createElement('div');
+                    parentDiv.className = 'permission-item';
+                    parentDiv.innerHTML = 
+                        '<input type="checkbox" name="permissions" value="' + parent.id + '" title="' + parent.permissionName + '" lay-skin="primary">' +
+                        '<span>' + parent.permissionName + ' (' + parent.permissionCode + ')</span>';
+                    
+                    parentLi.appendChild(parentDiv);
+                    
+                    if (parent.children && parent.children.length > 0) {
+                        var childrenUl = document.createElement('ul');
+                        childrenUl.className = 'permission-children';
+                        
+                        parent.children.forEach(function(child) {
+                            var childLi = document.createElement('li');
+                            var childDiv = document.createElement('div');
+                            childDiv.className = 'permission-item';
+                            childDiv.innerHTML = 
+                                '<input type="checkbox" name="permissions" value="' + child.id + '" title="' + child.permissionName + '" lay-skin="primary">' +
+                                '<span>' + child.permissionName + ' (' + child.permissionCode + ')</span>';
+                            
+                            childLi.appendChild(childDiv);
+                            childrenUl.appendChild(childLi);
+                        });
+                        
+                        parentLi.appendChild(childrenUl);
+                    }
+                    
+                    permissionTree.appendChild(parentLi);
+                });
+                
+                form.render('checkbox');
+            }
+            
+            // 选择图标
+            function selectIcon(iconClass) {
+                // 清除之前的选中状态
+                document.querySelectorAll('.icon-item').forEach(function(item) {
+                    item.classList.remove('selected');
+                });
+                
+                // 设置新的选中状态
+                var selectedItem = document.querySelector('.icon-item i.layui-icon.' + iconClass.replace('layui-icon-', 'layui-icon-'));
+                if (selectedItem) {
+                    selectedItem.parentElement.classList.add('selected');
+                }
+                
+                // 设置表单值
+                document.querySelector('input[name="buttonIcon"]').value = iconClass;
+                updatePreview();
+            }
+            
+            // 自定义验证规则
+            form.verify({
+                buttonCode: function(value) {
+                    if (!/^[a-zA-Z0-9:_-]+$/.test(value)) {
+                        return '按钮编码只能包含字母、数字、冒号、下划线和横线';
+                    }
+                    if (value.length < 2) {
+                        return '按钮编码长度不能少于2位';
+                    }
+                }
+            });
+            
+            // 监听表单字段变化，实时更新预览
+            document.querySelector('input[name="buttonName"]').addEventListener('input', updatePreview);
+            document.querySelector('input[name="buttonCode"]').addEventListener('input', function() {
+                updatePreview();
+                updateCodeExample();
+            });
+            
+            // 监听权限选择变化
+            form.on('checkbox()', function(data) {
+                updatePreview();
+            });
+            
+            // 监听状态变化
+            form.on('radio()', function(data) {
+                updatePreview();
+            });
+            
+            // 更新编码示例
+            function updateCodeExample() {
+                var buttonCode = document.querySelector('input[name="buttonCode"]').value.trim();
+                var codeExample = document.getElementById('codeExample');
+                
+                if (buttonCode) {
+                    codeExample.style.display = 'block';
+                } else {
+                    codeExample.style.display = 'none';
+                }
+            }
+            
+            // 更新预览
+            function updatePreview() {
+                var buttonName = document.querySelector('input[name="buttonName"]').value;
+                var buttonCode = document.querySelector('input[name="buttonCode"]').value;
+                var buttonIcon = document.querySelector('input[name="buttonIcon"]').value;
+                var status = document.querySelector('input[name="status"]:checked')?.value;
+                
+                // 获取选中的权限
+                var selectedPermissions = [];
+                var selectedPermissionNames = [];
+                document.querySelectorAll('input[name="permissions"]:checked').forEach(function(checkbox) {
+                    selectedPermissions.push(parseInt(checkbox.value));
+                    selectedPermissionNames.push(checkbox.title);
+                });
+                
+                if (buttonName || buttonCode) {
+                    document.getElementById('buttonPreview').style.display = 'block';
+                    document.getElementById('previewName').textContent = buttonName || '-';
+                    document.getElementById('previewCode').textContent = buttonCode || '-';
+                    document.getElementById('previewPermissions').textContent = 
+                        selectedPermissionNames.length > 0 ? selectedPermissionNames.join(', ') : '未选择';
+                    document.getElementById('previewStatus').textContent = status === '1' ? '正常' : '禁用';
+                    
+                    // 更新按钮演示
+                    var demoIcon = document.getElementById('demoIcon');
+                    var demoText = document.getElementById('demoText');
+                    
+                    if (buttonIcon) {
+                        demoIcon.className = 'layui-icon ' + buttonIcon;
+                        demoIcon.style.display = 'inline';
+                    } else {
+                        demoIcon.style.display = 'none';
+                    }
+                    
+                    demoText.textContent = buttonName || '按钮预览';
+                } else {
+                    document.getElementById('buttonPreview').style.display = 'none';
+                }
+            }
+            
+            // 按钮编码自动生成建议
+            document.querySelector('input[name="buttonName"]').addEventListener('input', function(e) {
+                var buttonName = e.target.value.trim();
+                var buttonCodeInput = document.querySelector('input[name="buttonCode"]');
+                
+                // 只在新增模式且编码为空时自动生成
+                if (!isEdit && !buttonCodeInput.value.trim() && buttonName) {
+                    // 简单的中文到英文映射
+                    var nameMap = {
+                        '添加': 'add',
+                        '新增': 'add',
+                        '编辑': 'edit',
+                        '修改': 'edit',
+                        '删除': 'delete',
+                        '查看': 'view',
+                        '查询': 'query',
+                        '搜索': 'search',
+                        '导出': 'export',
+                        '导入': 'import',
+                        '审核': 'audit',
+                        '分配': 'assign',
+                        '重置': 'reset',
+                        '刷新': 'refresh',
+                        '保存': 'save',
+                        '提交': 'submit',
+                        '取消': 'cancel',
+                        '确认': 'confirm',
+                        '用户': 'user',
+                        '角色': 'role',
+                        '权限': 'permission',
+                        '部门': 'dept',
+                        '岗位': 'post'
+                    };
+                    
+                    var suggestion = '';
+                    
+                    // 提取模块和操作
+                    for (var key in nameMap) {
+                        if (buttonName.includes(key)) {
+                            if (key === '用户' || key === '角色' || key === '权限' || key === '部门' || key === '岗位') {
+                                // 模块名
+                                suggestion = nameMap[key] + ':';
+                            } else {
+                                // 操作名
+                                if (suggestion) {
+                                    suggestion += nameMap[key];
+                                } else {
+                                    suggestion = nameMap[key];
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 如果没有找到模块，尝试从权限中推断
+                    if (!suggestion.includes(':')) {
+                        var selectedPermissions = document.querySelectorAll('input[name="permissions"]:checked');
+                        if (selectedPermissions.length > 0) {
+                            var firstPermission = selectedPermissions[0];
+                            var permissionCode = getPermissionCodeById(parseInt(firstPermission.value));
+                            if (permissionCode && permissionCode.includes(':')) {
+                                var module = permissionCode.split(':')[1] || permissionCode.split(':')[0];
+                                suggestion = module + ':' + suggestion;
+                            }
+                        }
+                    }
+                    
+                    if (suggestion) {
+                        buttonCodeInput.value = suggestion;
+                        updatePreview();
+                        updateCodeExample();
+                    }
+                }
+            });
+            
+            // 根据权限ID获取权限编码
+            function getPermissionCodeById(id) {
+                for (var i = 0; i < permissionData.length; i++) {
+                    var parent = permissionData[i];
+                    if (parent.id === id) {
+                        return parent.permissionCode;
+                    }
+                    if (parent.children) {
+                        for (var j = 0; j < parent.children.length; j++) {
+                            var child = parent.children[j];
+                            if (child.id === id) {
+                                return child.permissionCode;
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+            
+            // 提供给父页面调用的提交方法
+            window.submitForm = function(callback) {
+                // 验证表单
+                var buttonName = document.querySelector('input[name="buttonName"]').value.trim();
+                var buttonCode = document.querySelector('input[name="buttonCode"]').value.trim();
+                
+                if (!buttonName) {
+                    layer.msg('请输入按钮名称', {icon: 2});
+                    return;
+                }
+                
+                if (!buttonCode) {
+                    layer.msg('请输入按钮编码', {icon: 2});
+                    return;
+                }
+                
+                if (!/^[a-zA-Z0-9:_-]+$/.test(buttonCode)) {
+                    layer.msg('按钮编码只能包含字母、数字、冒号、下划线和横线', {icon: 2});
+                    return;
+                }
+                
+                // 获取选中的权限
+                var selectedPermissions = [];
+                var selectedPermissionNames = [];
+                document.querySelectorAll('input[name="permissions"]:checked').forEach(function(checkbox) {
+                    selectedPermissions.push(parseInt(checkbox.value));
+                    selectedPermissionNames.push(checkbox.title);
+                });
+                
+                // 收集表单数据
+                var formData = {
+                    id: document.getElementById('buttonId').value,
+                    buttonName: buttonName,
+                    buttonCode: buttonCode,
+                    buttonIcon: document.querySelector('input[name="buttonIcon"]').value,
+                    permissions: selectedPermissions,
+                    permissionNames: selectedPermissionNames,
+                    description: document.querySelector('textarea[name="description"]').value.trim(),
+                    sort: parseInt(document.querySelector('input[name="sort"]').value) || 0,
+                    status: parseInt(document.querySelector('input[name="status"]:checked').value)
+                };
+                
+                console.log('提交的按钮数据：', formData);
+                
+                // 模拟提交延迟
+                setTimeout(function() {
+                    if (callback) {
+                        callback(formData);
+                    }
+                }, 500);
+            };
+        });
+    </script>
+</body>
+</html>

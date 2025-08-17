@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>权限管理</title>
+    <style>
+        .search-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .content-wrapper {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .tree-panel {
+            flex: 0 0 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .table-panel {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .permission-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .permission-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        .permission-icon.menu {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .permission-icon.button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .permission-icon.api {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .permission-details {
+            flex: 1;
+        }
+        
+        .permission-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        
+        .permission-code {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .permission-path {
+            font-size: 11px;
+            color: #999;
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-top: 2px;
+        }
+        
+        .tree-search {
+            margin-bottom: 15px;
+        }
+        
+        .tree-search input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .tree-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .breadcrumb {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- 搜索表单 -->
+    <div class="search-form">
+        <form class="layui-form" lay-filter="searchForm">
+            <div class="layui-row">
+                <div class="layui-col-md8">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">权限名称：</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="permissionName" placeholder="请输入权限名称" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">权限类型：</label>
+                        <div class="layui-input-inline">
+                            <select name="type">
+                                <option value="">全部类型</option>
+                                <option value="menu">菜单权限</option>
+                                <option value="button">按钮权限</option>
+                                <option value="api">接口权限</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">状态：</label>
+                        <div class="layui-input-inline">
+                            <select name="status">
+                                <option value="">全部状态</option>
+                                <option value="1">正常</option>
+                                <option value="0">禁用</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md4">
+                    <div class="layui-inline">
+                        <button type="submit" class="layui-btn" lay-submit lay-filter="search">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div class="content-wrapper">
+        <!-- 权限树 -->
+        <div class="tree-panel">
+            <div class="panel-title">权限树结构</div>
+            <div class="tree-search">
+                <input type="text" id="treeSearch" placeholder="搜索权限...">
+            </div>
+            <div class="tree-container">
+                <div id="permissionTree"></div>
+            </div>
+        </div>
+        
+        <!-- 权限列表 -->
+        <div class="table-panel">
+            <div class="table-header">
+                <div>
+                    <h3 class="panel-title">权限列表</h3>
+                    <div class="breadcrumb" id="breadcrumb">
+                        <a href="javascript:void(0)" onclick="loadPermissions()">全部权限</a>
+                    </div>
+                </div>
+                <div class="table-actions">
+                    <button class="layui-btn layui-btn-sm" onclick="batchDelete()">
+                        <i class="layui-icon layui-icon-delete"></i> 批量删除
+                    </button>
+                    <button class="layui-btn layui-btn-normal layui-btn-sm" onclick="addPermission()">
+                        <i class="layui-icon layui-icon-add-1"></i> 添加权限
+                    </button>
+                </div>
+            </div>
+            
+            <table class="layui-table" lay-filter="permissionTable">
+                <thead>
+                    <tr>
+                        <th lay-data="{type:'checkbox', fixed:'left'}"></th>
+                        <th lay-data="{field:'id', width:80, sort:true}">ID</th>
+                        <th lay-data="{field:'permissionInfo', width:250}">权限信息</th>
+                        <th lay-data="{field:'type', width:100, align:'center'}">类型</th>
+                        <th lay-data="{field:'path', width:200}">路径/接口</th>
+                        <th lay-data="{field:'sort', width:80, align:'center'}">排序</th>
+                        <th lay-data="{field:'status', width:80, align:'center'}">状态</th>
+                        <th lay-data="{field:'createTime', width:160}">创建时间</th>
+                        <th lay-data="{field:'operate', width:200, fixed:'right', align:'center'}">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 数据将通过JavaScript动态加载 -->
+                </tbody>
+            </table>
+            
+            <!-- 分页 -->
+            <div id="pagination"></div>
+        </div>
+    </div>
+    
+    <script>
+        layui.use(['table', 'form', 'tree', 'layer'], function(){
+            var table = layui.table;
+            var form = layui.form;
+            var tree = layui.tree;
+            var layer = layui.layer;
+            
+            // 模拟权限数据
+            var permissionData = [
+                {
+                    id: 1,
+                    parentId: 0,
+                    permissionName: '系统管理',
+                    permissionCode: 'system',
+                    type: 'menu',
+                    path: '/system',
+                    icon: 'layui-icon-set',
+                    sort: 1,
+                    status: 1,
+                    createTime: '2024-01-01 09:00:00',
+                    children: [
+                        {
+                            id: 11,
+                            parentId: 1,
+                            permissionName: '用户管理',
+                            permissionCode: 'system:user',
+                            type: 'menu',
+                            path: '/system/user',
+                            icon: 'layui-icon-user',
+                            sort: 1,
+                            status: 1,
+                            createTime: '2024-01-01 09:00:00',
+                            children: [
+                                {
+                                    id: 111,
+                                    parentId: 11,
+                                    permissionName: '查看用户',
+                                    permissionCode: 'system:user:view',
+                                    type: 'button',
+                                    path: '',
+                                    icon: 'layui-icon-eye',
+                                    sort: 1,
+                                    status: 1,
+                                    createTime: '2024-01-01 09:00:00'
+                                },
+                                {
+                                    id: 112,
+                                    parentId: 11,
+                                    permissionName: '添加用户',
+                                    permissionCode: 'system:user:add',
+                                    type: 'button',
+                                    path: '',
+                                    icon: 'layui-icon-add-1',
+                                    sort: 2,
+                                    status: 1,
+                                    createTime: '2024-01-01 09:00:00'
+                                },
+                                {
+                                    id: 113,
+                                    parentId: 11,
+                                    permissionName: '编辑用户',
+                                    permissionCode: 'system:user:edit',
+                                    type: 'button',
+                                    path: '',
+                                    icon: 'layui-icon-edit',
+                                    sort: 3,
+                                    status: 1,
+                                    createTime: '2024-01-01 09:00:00'
+                                },
+                                {
+                                    id: 114,
+                                    parentId: 11,
+                                    permissionName: '删除用户',
+                                    permissionCode: 'system:user:delete',
+                                    type: 'button',
+                                    path: '',
+                                    icon: 'layui-icon-delete',
+                                    sort: 4,
+                                    status: 1,
+                                    createTime: '2024-01-01 09:00:00'
+                                },
+                                {
+                                    id: 115,
+                                    parentId: 11,
+                                    permissionName: '用户列表接口',
+                                    permissionCode: 'system:user:list',
+                                    type: 'api',
+                                    path: '/api/system/user/list',
+                                    icon: 'layui-icon-link',
+                                    sort: 5,
+                                    status: 1,
+                                    createTime: '2024-01-01 09:00:00'
+                                }
+                            ]
+                        },
+                        {
+                            id: 12,
+                            parentId: 1,
+                            permissionName: '角色管理',
+                            permissionCode: 'system:role',
+                            type: 'menu',
+                            path: '/system/role',
+                            icon: 'layui-icon-group',
+                            sort: 2,
+                            status: 1,
+                            createTime: '2024-01-01 09:00:00',
+                            children: [
+                                {
+                                    id: 121,
+                                    parentId: 12,
+                                    permissionName: '查看角色',
+                                    permissionCode: 'system:role:view',
+                                    type: 'button',
+                                    path: '',
+                                    icon: 'layui-icon-eye',
+                                    sort: 1,
+                                    status: 1,
+                                    createTime: '2024-01-01 09:00:00'
+                                },
+                                {
+                                    id: 122,
+                                    parentId: 12,
+                                    permissionName: '分配权限',
+                                    permissionCode: 'system:role:assign',
+                                    type: 'button',
+                                    path: '',
+                                    icon: 'layui-icon-vercode',
+                                    sort: 2,
+                                    status: 1,
+                                    createTime: '2024-01-01 09:00:00'
+                                }
+                            ]
+                        },
+                        {
+                            id: 13,
+                            parentId: 1,
+                            permissionName: '权限管理',
+                            permissionCode: 'system:permission',
+                            type: 'menu',
+                            path: '/system/permission',
+                            icon: 'layui-icon-vercode',
+                            sort: 3,
+                            status: 1,
+                            createTime: '2024-01-01 09:00:00'
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    parentId: 0,
+                    permissionName: '业务管理',
+                    permissionCode: 'business',
+                    type: 'menu',
+                    path: '/business',
+                    icon: 'layui-icon-app',
+                    sort: 2,
+                    status: 1,
+                    createTime: '2024-01-01 09:00:00',
+                    children: [
+                        {
+                            id: 21,
+                            parentId: 2,
+                            permissionName: '订单管理',
+                            permissionCode: 'business:order',
+                            type: 'menu',
+                            path: '/business/order',
+                            icon: 'layui-icon-form',
+                            sort: 1,
+                            status: 1,
+                            createTime: '2024-01-01 09:00:00'
+                        }
+                    ]
+                }
+            ];
+            
+            var currentParentId = null;
+            var flatPermissions = [];
+            
+            // 扁平化权限数据
+            function flattenPermissions(data, result = []) {
+                data.forEach(item => {
+                    result.push(item);
+                    if (item.children && item.children.length > 0) {
+                        flattenPermissions(item.children, result);
+                    }
+                });
+                return result;
+            }
+            
+            flatPermissions = flattenPermissions(permissionData);
+            
+            // 渲染权限树
+            function renderTree() {
+                tree.render({
+                    elem: '#permissionTree',
+                    data: permissionData,
+                    showCheckbox: false,
+                    id: 'permissionTreeId',
+                    click: function(obj) {
+                        currentParentId = obj.data.id;
+                        loadPermissions(obj.data.id);
+                        updateBreadcrumb(obj.data);
+                    }
+                });
+            }
+            
+            // 更新面包屑
+            function updateBreadcrumb(nodeData) {
+                var breadcrumbHtml = '<a href="javascript:void(0)" onclick="loadPermissions()">全部权限</a>';
+                
+                // 查找父级路径
+                var path = [];
+                var current = nodeData;
+                
+                while (current) {
+                    path.unshift(current);
+                    current = findParent(current.parentId);
+                }
+                
+                path.forEach(function(item, index) {
+                    breadcrumbHtml += ' > <a href="javascript:void(0)" onclick="loadPermissions(' + item.id + ')">' + item.permissionName + '</a>';
+                });
+                
+                document.getElementById('breadcrumb').innerHTML = breadcrumbHtml;
+            }
+            
+            // 查找父级节点
+            function findParent(parentId) {
+                return flatPermissions.find(p => p.id === parentId);
+            }
+            
+            // 加载权限列表
+            function loadPermissions(parentId = null) {
+                currentParentId = parentId;
+                var filteredData;
+                
+                if (parentId === null) {
+                    // 显示所有权限
+                    filteredData = flatPermissions;
+                } else {
+                    // 显示指定父级下的子权限
+                    filteredData = flatPermissions.filter(p => p.parentId === parentId);
+                }
+                
+                renderTable(filteredData);
+            }
+            
+            // 渲染表格
+            function renderTable(data) {
+                var tableData = data.map(function(item) {
+                    return {
+                        id: item.id,
+                        permissionInfo: getPermissionInfoHtml(item),
+                        type: getTypeHtml(item.type),
+                        path: item.path || '-',
+                        sort: item.sort,
+                        status: getStatusHtml(item.status),
+                        createTime: item.createTime,
+                        operate: getOperateHtml(item)
+                    };
+                });
+                
+                table.render({
+                    elem: '.layui-table',
+                    data: tableData,
+                    page: false,
+                    limit: 20,
+                    cols: [[
+                        {type:'checkbox', fixed:'left'},
+                        {field:'id', title:'ID', width:80, sort:true},
+                        {field:'permissionInfo', title:'权限信息', width:250},
+                        {field:'type', title:'类型', width:100, align:'center'},
+                        {field:'path', title:'路径/接口', width:200},
+                        {field:'sort', title:'排序', width:80, align:'center'},
+                        {field:'status', title:'状态', width:80, align:'center'},
+                        {field:'createTime', title:'创建时间', width:160},
+                        {field:'operate', title:'操作', width:200, fixed:'right', align:'center'}
+                    ]]
+                });
+            }
+            
+            // 获取权限信息HTML
+            function getPermissionInfoHtml(permission) {
+                return `
+                    <div class="permission-info">
+                        <div class="permission-icon ${permission.type}">
+                            <i class="layui-icon ${permission.icon || 'layui-icon-file'}"></i>
+                        </div>
+                        <div class="permission-details">
+                            <div class="permission-name">${permission.permissionName}</div>
+                            <div class="permission-code">${permission.permissionCode}</div>
+                            ${permission.path ? '<div class="permission-path">' + permission.path + '</div>' : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 获取类型HTML
+            function getTypeHtml(type) {
+                switch(type) {
+                    case 'menu':
+                        return '<span class="layui-badge layui-bg-blue">菜单</span>';
+                    case 'button':
+                        return '<span class="layui-badge layui-bg-orange">按钮</span>';
+                    case 'api':
+                        return '<span class="layui-badge layui-bg-green">接口</span>';
+                    default:
+                        return '<span class="layui-badge layui-bg-gray">未知</span>';
+                }
+            }
+            
+            // 获取状态HTML
+            function getStatusHtml(status) {
+                switch(status) {
+                    case 1:
+                        return '<span class="layui-badge layui-bg-green">正常</span>';
+                    case 0:
+                        return '<span class="layui-badge">禁用</span>';
+                    default:
+                        return '<span class="layui-badge layui-bg-gray">未知</span>';
+                }
+            }
+            
+            // 获取操作按钮HTML
+            function getOperateHtml(permission) {
+                return `
+                    <button class="layui-btn layui-btn-xs" onclick="editPermission(${permission.id})">
+                        <i class="layui-icon layui-icon-edit"></i> 编辑
+                    </button>
+                    <button class="layui-btn layui-btn-xs layui-btn-normal" onclick="addSubPermission(${permission.id})">
+                        <i class="layui-icon layui-icon-add-1"></i> 添加子权限
+                    </button>
+                    <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deletePermission(${permission.id})">
+                        <i class="layui-icon layui-icon-delete"></i> 删除
+                    </button>
+                `;
+            }
+            
+            // 初始化
+            renderTree();
+            loadPermissions();
+            
+            // 树搜索
+            document.getElementById('treeSearch').addEventListener('input', function(e) {
+                var keyword = e.target.value.trim();
+                if (keyword) {
+                    var filteredData = filterTreeData(permissionData, keyword);
+                    tree.reload('permissionTreeId', {
+                        data: filteredData
+                    });
+                } else {
+                    tree.reload('permissionTreeId', {
+                        data: permissionData
+                    });
+                }
+            });
+            
+            // 过滤树数据
+            function filterTreeData(data, keyword) {
+                var result = [];
+                data.forEach(function(item) {
+                    var match = item.permissionName.indexOf(keyword) !== -1 || 
+                               item.permissionCode.indexOf(keyword) !== -1;
+                    
+                    var children = item.children ? filterTreeData(item.children, keyword) : [];
+                    
+                    if (match || children.length > 0) {
+                        var newItem = Object.assign({}, item);
+                        if (children.length > 0) {
+                            newItem.children = children;
+                        }
+                        result.push(newItem);
+                    }
+                });
+                return result;
+            }
+            
+            // 搜索表单提交
+            form.on('submit(search)', function(data){
+                var formData = data.field;
+                var filteredData = flatPermissions.filter(function(permission) {
+                    var match = true;
+                    
+                    if (formData.permissionName && permission.permissionName.indexOf(formData.permissionName) === -1) {
+                        match = false;
+                    }
+                    
+                    if (formData.type && permission.type !== formData.type) {
+                        match = false;
+                    }
+                    
+                    if (formData.status !== '' && permission.status != formData.status) {
+                        match = false;
+                    }
+                    
+                    return match;
+                });
+                
+                renderTable(filteredData);
+                layer.msg('搜索完成，共找到 ' + filteredData.length + ' 条记录');
+                return false;
+            });
+            
+            // 全局函数
+            window.loadPermissions = loadPermissions;
+            
+            window.addPermission = function() {
+                layer.open({
+                    type: 2,
+                    title: '添加权限',
+                    area: ['700px', '600px'],
+                    content: 'permission-form.html?parentId=' + (currentParentId || 0),
+                    btn: ['保存', '取消'],
+                    yes: function(index, layero) {
+                        var iframeWin = window[layero.find('iframe')[0]['name']];
+                        iframeWin.submitForm(function(data) {
+                            layer.msg('权限添加成功', {icon: 1});
+                            layer.close(index);
+                            // 重新加载数据
+                            renderTree();
+                            loadPermissions(currentParentId);
+                        });
+                    }
+                });
+            };
+            
+            window.addSubPermission = function(parentId) {
+                layer.open({
+                    type: 2,
+                    title: '添加子权限',
+                    area: ['700px', '600px'],
+                    content: 'permission-form.html?parentId=' + parentId,
+                    btn: ['保存', '取消'],
+                    yes: function(index, layero) {
+                        var iframeWin = window[layero.find('iframe')[0]['name']];
+                        iframeWin.submitForm(function(data) {
+                            layer.msg('子权限添加成功', {icon: 1});
+                            layer.close(index);
+                            renderTree();
+                            loadPermissions(currentParentId);
+                        });
+                    }
+                });
+            };
+            
+            window.editPermission = function(id) {
+                layer.open({
+                    type: 2,
+                    title: '编辑权限',
+                    area: ['700px', '600px'],
+                    content: 'permission-form.html?id=' + id,
+                    btn: ['保存', '取消'],
+                    yes: function(index, layero) {
+                        var iframeWin = window[layero.find('iframe')[0]['name']];
+                        iframeWin.submitForm(function(data) {
+                            layer.msg('权限更新成功', {icon: 1});
+                            layer.close(index);
+                            renderTree();
+                            loadPermissions(currentParentId);
+                        });
+                    }
+                });
+            };
+            
+            window.deletePermission = function(id) {
+                var permission = flatPermissions.find(p => p.id === id);
+                if (!permission) {
+                    layer.msg('权限不存在', {icon: 2});
+                    return;
+                }
+                
+                // 检查是否有子权限
+                var hasChildren = flatPermissions.some(p => p.parentId === id);
+                if (hasChildren) {
+                    layer.msg('该权限下还有子权限，不能删除', {icon: 2});
+                    return;
+                }
+                
+                layer.confirm('确定要删除权限 "' + permission.permissionName + '" 吗？', {
+                    icon: 3,
+                    title: '警告'
+                }, function(index) {
+                    layer.msg('删除成功', {icon: 1});
+                    layer.close(index);
+                    renderTree();
+                    loadPermissions(currentParentId);
+                });
+            };
+            
+            window.batchDelete = function() {
+                var checkStatus = table.checkStatus('permissionTable');
+                if (checkStatus.data.length === 0) {
+                    layer.msg('请选择要删除的权限', {icon: 2});
+                    return;
+                }
+                
+                layer.confirm('确定要删除选中的 ' + checkStatus.data.length + ' 个权限吗？', {
+                    icon: 3,
+                    title: '批量删除'
+                }, function(index) {
+                    layer.msg('批量删除成功', {icon: 1});
+                    layer.close(index);
+                    renderTree();
+                    loadPermissions(currentParentId);
+                });
+            };
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理</title>
+    <style>
+        .search-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .search-form .layui-form-item {
+            margin-bottom: 15px;
+        }
+        
+        .search-form .layui-inline {
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .status-normal {
+            color: #28a745;
+        }
+        
+        .status-disabled {
+            color: #dc3545;
+        }
+        
+        .status-locked {
+            color: #ffc107;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-details {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        
+        .user-username {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .role-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #e9ecef;
+            color: #495057;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 5px;
+            margin-bottom: 2px;
+        }
+        
+        .role-tag.admin {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .role-tag.manager {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .role-tag.user {
+            background: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- 搜索表单 -->
+    <div class="search-form">
+        <form class="layui-form" lay-filter="searchForm">
+            <div class="layui-row">
+                <div class="layui-col-md6">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">用户名：</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="username" placeholder="请输入用户名" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">姓名：</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="realName" placeholder="请输入姓名" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md6">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">状态：</label>
+                        <div class="layui-input-inline">
+                            <select name="status">
+                                <option value="">全部状态</option>
+                                <option value="1">正常</option>
+                                <option value="0">禁用</option>
+                                <option value="2">锁定</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">角色：</label>
+                        <div class="layui-input-inline">
+                            <select name="roleId">
+                                <option value="">全部角色</option>
+                                <option value="1">管理员</option>
+                                <option value="2">经理</option>
+                                <option value="3">普通用户</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <button type="submit" class="layui-btn" lay-submit lay-filter="search">
+                        <i class="layui-icon layui-icon-search"></i> 搜索
+                    </button>
+                    <button type="reset" class="layui-btn layui-btn-primary">
+                        <i class="layui-icon layui-icon-refresh"></i> 重置
+                    </button>
+                    <button type="button" class="layui-btn layui-btn-normal" onclick="exportUsers()">
+                        <i class="layui-icon layui-icon-export"></i> 导出
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- 用户列表 -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">用户列表</h3>
+            <div class="table-actions">
+                <button class="layui-btn layui-btn-sm" onclick="batchDelete()">
+                    <i class="layui-icon layui-icon-delete"></i> 批量删除
+                </button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm" onclick="addUser()">
+                    <i class="layui-icon layui-icon-add-1"></i> 添加用户
+                </button>
+            </div>
+        </div>
+        
+        <table class="layui-table" lay-filter="userTable">
+            <thead>
+                <tr>
+                    <th lay-data="{type:'checkbox', fixed:'left'}"></th>
+                    <th lay-data="{field:'id', width:80, sort:true}">ID</th>
+                    <th lay-data="{field:'userInfo', width:200}">用户信息</th>
+                    <th lay-data="{field:'email', width:180}">邮箱</th>
+                    <th lay-data="{field:'phone', width:120}">手机号</th>
+                    <th lay-data="{field:'roles', width:150}">角色</th>
+                    <th lay-data="{field:'status', width:80, align:'center'}">状态</th>
+                    <th lay-data="{field:'lastLoginTime', width:160}">最后登录</th>
+                    <th lay-data="{field:'createTime', width:160}">创建时间</th>
+                    <th lay-data="{field:'operate', width:200, fixed:'right', align:'center'}">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 数据将通过JavaScript动态加载 -->
+            </tbody>
+        </table>
+        
+        <!-- 分页 -->
+        <div id="pagination"></div>
+    </div>
+    
+    <script>
+        layui.use(['table', 'form', 'laypage', 'layer'], function(){
+            var table = layui.table;
+            var form = layui.form;
+            var laypage = layui.laypage;
+            var layer = layui.layer;
+            
+            // 模拟用户数据
+            var userData = [
+                {
+                    id: 1,
+                    username: 'admin',
+                    realName: '系统管理员',
+                    email: 'admin@example.com',
+                    phone: '13800138000',
+                    status: 1,
+                    roles: ['管理员'],
+                    lastLoginTime: '2024-01-15 10:30:00',
+                    createTime: '2024-01-01 09:00:00'
+                },
+                {
+                    id: 2,
+                    username: 'manager001',
+                    realName: '张经理',
+                    email: 'zhang@example.com',
+                    phone: '13800138001',
+                    status: 1,
+                    roles: ['经理', '普通用户'],
+                    lastLoginTime: '2024-01-15 09:15:00',
+                    createTime: '2024-01-02 10:00:00'
+                },
+                {
+                    id: 3,
+                    username: 'user001',
+                    realName: '李用户',
+                    email: 'li@example.com',
+                    phone: '13800138002',
+                    status: 0,
+                    roles: ['普通用户'],
+                    lastLoginTime: '2024-01-14 16:20:00',
+                    createTime: '2024-01-03 11:00:00'
+                },
+                {
+                    id: 4,
+                    username: 'user002',
+                    realName: '王用户',
+                    email: 'wang@example.com',
+                    phone: '13800138003',
+                    status: 2,
+                    roles: ['普通用户'],
+                    lastLoginTime: '2024-01-13 14:45:00',
+                    createTime: '2024-01-04 12:00:00'
+                }
+            ];
+            
+            // 渲染表格
+            function renderTable(data = userData) {
+                var tableData = data.map(function(item) {
+                    return {
+                        id: item.id,
+                        userInfo: getUserInfoHtml(item),
+                        email: item.email,
+                        phone: item.phone,
+                        roles: getRolesHtml(item.roles),
+                        status: getStatusHtml(item.status),
+                        lastLoginTime: item.lastLoginTime,
+                        createTime: item.createTime,
+                        operate: getOperateHtml(item)
+                    };
+                });
+                
+                table.render({
+                    elem: '.layui-table',
+                    data: tableData,
+                    page: false,
+                    limit: 10,
+                    cols: [[
+                        {type:'checkbox', fixed:'left'},
+                        {field:'id', title:'ID', width:80, sort:true},
+                        {field:'userInfo', title:'用户信息', width:200},
+                        {field:'email', title:'邮箱', width:180},
+                        {field:'phone', title:'手机号', width:120},
+                        {field:'roles', title:'角色', width:150},
+                        {field:'status', title:'状态', width:80, align:'center'},
+                        {field:'lastLoginTime', title:'最后登录', width:160},
+                        {field:'createTime', title:'创建时间', width:160},
+                        {field:'operate', title:'操作', width:200, fixed:'right', align:'center'}
+                    ]]
+                });
+            }
+            
+            // 获取用户信息HTML
+            function getUserInfoHtml(user) {
+                var avatar = user.realName.charAt(0).toUpperCase();
+                return `
+                    <div class="user-info">
+                        <div class="user-avatar">${avatar}</div>
+                        <div class="user-details">
+                            <div class="user-name">${user.realName}</div>
+                            <div class="user-username">@${user.username}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 获取角色HTML
+            function getRolesHtml(roles) {
+                return roles.map(function(role) {
+                    var className = '';
+                    if (role === '管理员') className = 'admin';
+                    else if (role === '经理') className = 'manager';
+                    else if (role === '普通用户') className = 'user';
+                    
+                    return `<span class="role-tag ${className}">${role}</span>`;
+                }).join('');
+            }
+            
+            // 获取状态HTML
+            function getStatusHtml(status) {
+                switch(status) {
+                    case 1:
+                        return '<span class="layui-badge layui-bg-green">正常</span>';
+                    case 0:
+                        return '<span class="layui-badge">禁用</span>';
+                    case 2:
+                        return '<span class="layui-badge layui-bg-orange">锁定</span>';
+                    default:
+                        return '<span class="layui-badge layui-bg-gray">未知</span>';
+                }
+            }
+            
+            // 获取操作按钮HTML
+            function getOperateHtml(user) {
+                return `
+                    <button class="layui-btn layui-btn-xs" onclick="editUser(${user.id})">
+                        <i class="layui-icon layui-icon-edit"></i> 编辑
+                    </button>
+                    <button class="layui-btn layui-btn-xs layui-btn-normal" onclick="assignRoles(${user.id})">
+                        <i class="layui-icon layui-icon-group"></i> 分配角色
+                    </button>
+                    <button class="layui-btn layui-btn-xs ${user.status === 1 ? 'layui-btn-warm' : 'layui-btn-normal'}" onclick="toggleStatus(${user.id}, ${user.status})">
+                        <i class="layui-icon ${user.status === 1 ? 'layui-icon-pause' : 'layui-icon-play'}"></i> ${user.status === 1 ? '禁用' : '启用'}
+                    </button>
+                    <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteUser(${user.id})">
+                        <i class="layui-icon layui-icon-delete"></i> 删除
+                    </button>
+                `;
+            }
+            
+            // 初始化表格
+            renderTable();
+            
+            // 搜索表单提交
+            form.on('submit(search)', function(data){
+                var formData = data.field;
+                var filteredData = userData.filter(function(user) {
+                    var match = true;
+                    
+                    if (formData.username && user.username.indexOf(formData.username) === -1) {
+                        match = false;
+                    }
+                    
+                    if (formData.realName && user.realName.indexOf(formData.realName) === -1) {
+                        match = false;
+                    }
+                    
+                    if (formData.status !== '' && user.status != formData.status) {
+                        match = false;
+                    }
+                    
+                    return match;
+                });
+                
+                renderTable(filteredData);
+                layer.msg('搜索完成，共找到 ' + filteredData.length + ' 条记录');
+                return false;
+            });
+            
+            // 全局函数
+            window.addUser = function() {
+                layer.open({
+                    type: 2,
+                    title: '添加用户',
+                    area: ['800px', '600px'],
+                    content: 'user-form.html',
+                    btn: ['保存', '取消'],
+                    yes: function(index, layero) {
+                        // 获取iframe中的表单数据
+                        var iframeWin = window[layero.find('iframe')[0]['name']];
+                        iframeWin.submitForm(function(data) {
+                            // 添加用户逻辑
+                            layer.msg('用户添加成功', {icon: 1});
+                            layer.close(index);
+                            renderTable(); // 重新渲染表格
+                        });
+                    }
+                });
+            };
+            
+            window.editUser = function(id) {
+                var user = userData.find(u => u.id === id);
+                if (!user) {
+                    layer.msg('用户不存在', {icon: 2});
+                    return;
+                }
+                
+                layer.open({
+                    type: 2,
+                    title: '编辑用户',
+                    area: ['800px', '600px'],
+                    content: 'user-form.html?id=' + id,
+                    btn: ['保存', '取消'],
+                    yes: function(index, layero) {
+                        var iframeWin = window[layero.find('iframe')[0]['name']];
+                        iframeWin.submitForm(function(data) {
+                            layer.msg('用户更新成功', {icon: 1});
+                            layer.close(index);
+                            renderTable();
+                        });
+                    }
+                });
+            };
+            
+            window.assignRoles = function(id) {
+                layer.open({
+                    type: 1,
+                    title: '分配角色',
+                    area: ['500px', '400px'],
+                    content: `
+                        <div style="padding: 20px;">
+                            <form class="layui-form">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">选择角色：</label>
+                                    <div class="layui-input-block">
+                                        <input type="checkbox" name="roles" value="1" title="管理员">
+                                        <input type="checkbox" name="roles" value="2" title="经理" checked>
+                                        <input type="checkbox" name="roles" value="3" title="普通用户" checked>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    `,
+                    btn: ['保存', '取消'],
+                    yes: function(index) {
+                        layer.msg('角色分配成功', {icon: 1});
+                        layer.close(index);
+                        renderTable();
+                    }
+                });
+            };
+            
+            window.toggleStatus = function(id, currentStatus) {
+                var newStatus = currentStatus === 1 ? 0 : 1;
+                var statusText = newStatus === 1 ? '启用' : '禁用';
+                
+                layer.confirm('确定要' + statusText + '该用户吗？', {
+                    icon: 3,
+                    title: '提示'
+                }, function(index) {
+                    // 更新用户状态
+                    var user = userData.find(u => u.id === id);
+                    if (user) {
+                        user.status = newStatus;
+                    }
+                    
+                    layer.msg(statusText + '成功', {icon: 1});
+                    layer.close(index);
+                    renderTable();
+                });
+            };
+            
+            window.deleteUser = function(id) {
+                layer.confirm('确定要删除该用户吗？删除后不可恢复！', {
+                    icon: 3,
+                    title: '警告'
+                }, function(index) {
+                    // 删除用户
+                    userData = userData.filter(u => u.id !== id);
+                    
+                    layer.msg('删除成功', {icon: 1});
+                    layer.close(index);
+                    renderTable();
+                });
+            };
+            
+            window.batchDelete = function() {
+                var checkStatus = table.checkStatus('userTable');
+                if (checkStatus.data.length === 0) {
+                    layer.msg('请选择要删除的用户', {icon: 2});
+                    return;
+                }
+                
+                layer.confirm('确定要删除选中的 ' + checkStatus.data.length + ' 个用户吗？', {
+                    icon: 3,
+                    title: '批量删除'
+                }, function(index) {
+                    layer.msg('批量删除成功', {icon: 1});
+                    layer.close(index);
+                    renderTable();
+                });
+            };
+            
+            window.exportUsers = function() {
+                layer.msg('导出功能开发中...', {icon: 6});
+            };
+        });
+    </script>
+</body>
+</html>
