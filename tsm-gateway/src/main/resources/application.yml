@@ -1,0 +1,97 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: tsm-gateway
+  profiles:
+    active: dev
+  config:
+    import: optional:nacos:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: tsm
+        group: DEFAULT_GROUP
+        enabled: false
+      config:
+        server-addr: localhost:8848
+        namespace: tsm
+        group: DEFAULT_GROUP
+        file-extension: yml
+        import-check:
+          enabled: false
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # 认证服务路由
+        - id: tsm-auth
+          uri: lb://tsm-auth
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+        
+        # 用户服务路由
+        - id: tsm-user
+          uri: lb://tsm-user
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=1
+        
+        # 权限服务路由
+        - id: tsm-permission
+          uri: lb://tsm-permission
+          predicates:
+            - Path=/api/permission/**,/api/role/**
+          filters:
+            - StripPrefix=1
+        
+        # 静态资源路由
+        - id: tsm-web
+          uri: lb://tsm-web
+          predicates:
+            - Path=/static/**,/,/login,/index,/user/**,/permission/**,/profile
+          filters:
+            - StripPrefix=0
+      
+      # 全局过滤器配置
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - AddResponseHeader=Access-Control-Allow-Origin, *
+        - AddResponseHeader=Access-Control-Allow-Methods, GET,POST,PUT,DELETE,OPTIONS
+        - AddResponseHeader=Access-Control-Allow-Headers, *
+        - AddResponseHeader=Access-Control-Max-Age, 3600
+
+# 负载均衡配置
+ribbon:
+  ReadTimeout: 60000
+  ConnectTimeout: 60000
+  MaxAutoRetries: 1
+  MaxAutoRetriesNextServer: 1
+  OkToRetryOnAllOperations: false
+
+# 日志配置
+logging:
+  level:
+    com.tsm.gateway: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true

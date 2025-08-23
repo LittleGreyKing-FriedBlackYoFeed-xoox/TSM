@@ -1,0 +1,11 @@
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\entity\User.java
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\result\ResultCode.java
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\entity\Role.java
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\entity\Permission.java
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\result\PageResult.java
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\util\JwtUtil.java
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\util\PasswordUtil.java
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\util\CaptchaUtil.java
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\exception\BusinessException.java
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\exception\GlobalExceptionHandler.java
+D:\Trae_workspace_EN\TSM\tsm-common\src\main\java\com\tsm\common\result\Result.java

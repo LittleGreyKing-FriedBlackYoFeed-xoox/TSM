@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSM - 登录</title>
+    <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 400px;
+            max-width: 90%;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-title {
+            font-size: 24px;
+            color: #333333;
+            margin: 0;
+            font-weight: 500;
+        }
+        
+        .login-subtitle {
+            font-size: 14px;
+            color: #999999;
+            margin: 8px 0 0 0;
+        }
+        
+        .layui-form-item {
+            margin-bottom: 20px;
+        }
+        
+        .layui-input {
+            height: 45px;
+            border: 1px solid #e6e6e6;
+            border-radius: 4px;
+            padding: 0 15px;
+            font-size: 14px;
+            background-color: #fafafa;
+        }
+        
+        .layui-input:focus {
+            border-color: #666666;
+            background-color: #ffffff;
+        }
+        
+
+        
+        .login-btn {
+            width: 100%;
+            height: 45px;
+            background-color: #333333;
+            border: none;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .login-btn:hover {
+            background-color: #555555;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #666666;
+        }
+        
+        .forgot-password {
+            color: #999999;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        
+        .forgot-password:hover {
+            color: #666666;
+        }
+        
+        .error-msg {
+            color: #ff5722;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1 class="login-title">TSM</h1>
+        </div>
+        
+        <form class="layui-form" id="loginForm">
+            <div class="layui-form-item">
+                <input type="text" name="username" placeholder="请输入用户名" class="layui-input" required>
+                <div class="error-msg" id="usernameError"></div>
+            </div>
+            
+            <div class="layui-form-item">
+                <input type="password" name="password" placeholder="请输入密码" class="layui-input" required>
+                <div class="error-msg" id="passwordError"></div>
+            </div>
+            
+
+            
+            <div class="remember-me">
+                <label class="layui-form-label" style="padding: 0; width: auto;">
+                    <input type="checkbox" name="rememberMe" lay-skin="primary" title="记住我">
+                </label>
+                <a href="#" class="forgot-password">忘记密码？</a>
+            </div>
+            
+            <button type="submit" class="login-btn" lay-submit lay-filter="loginSubmit">登录</button>
+        </form>
+    </div>
+    
+    <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+    <script>
+        layui.use(['form', 'layer'], function(){
+            var form = layui.form;
+            var layer = layui.layer;
+            
+            // 监听提交
+            form.on('submit(loginSubmit)', function(data){
+                var formData = data.field;
+                
+                // 清除之前的错误信息
+                document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+                
+                fetch('http://localhost:8081/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        // 保存token
+                        localStorage.setItem('token', data.data.accessToken);
+                        localStorage.setItem('userInfo', JSON.stringify(data.data.userInfo));
+                        
+                        layer.msg('登录成功', {icon: 1}, function(){
+                            window.location.href = '/index';
+                        });
+                    } else {
+                        layer.msg(data.message || '登录失败', {icon: 2});
+                    }
+                })
+                .catch(error => {
+                    console.error('登录失败:', error);
+                    layer.msg('网络错误，请重试', {icon: 2});
+                });
+                
+                return false;
+            });
+        });
+    </script>
+</body>
+</html>

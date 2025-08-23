@@ -1,0 +1,64 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: tsm-web
+  cloud:
+    nacos:
+      config:
+        import-check:
+          enabled: false
+  
+  # Thymeleaf配置
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  
+  # 静态资源配置
+  web:
+    resources:
+      static-locations: classpath:/static/
+  
+  # 暂时禁用Nacos配置
+  # cloud:
+  #   nacos:
+  #     discovery:
+  #       server-addr: 127.0.0.1:8848
+  #       namespace: public
+  #       group: DEFAULT_GROUP
+  #     config:
+  #       server-addr: 127.0.0.1:8848
+  #       namespace: public
+  #       group: DEFAULT_GROUP
+  #       file-extension: yml
+
+# 日志配置
+logging:
+  level:
+    com.tsm.web: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+
+# Feign配置
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 10000
+        logger-level: basic
+
+# MyBatis配置
+mybatis:
+  # mapper-locations: classpath*:/mapper/**/*.xml  # 暂时禁用mapper扫描
+
+# TSM服务配置
+tsm:
+  services:
+    auth: http://localhost:8081
+    user: http://localhost:8082
+    permission: http://localhost:8083

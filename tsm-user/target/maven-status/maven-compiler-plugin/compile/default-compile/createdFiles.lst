@@ -1,0 +1,7 @@
+com\tsm\user\dto\UserDTO.class
+com\tsm\user\dto\UserQueryDTO.class
+com\tsm\user\entity\UserRole.class
+com\tsm\user\UserApplication.class
+com\tsm\user\vo\UserVO.class
+com\tsm\user\vo\UserVO$RoleInfo.class
+com\tsm\user\service\UserService.class

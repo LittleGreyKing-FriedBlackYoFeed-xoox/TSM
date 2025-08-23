@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSM - 主控制台</title>
+    <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        .layui-layout-admin .layui-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e6e6e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .layui-layout-admin .layui-side {
+            background-color: #333333;
+        }
+        
+        .layui-layout-admin .layui-body {
+            background-color: #f5f5f5;
+        }
+        
+        .header-logo {
+            float: left;
+            width: 200px;
+            line-height: 60px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333333;
+        }
+        
+        .header-user {
+            float: right;
+            margin-right: 20px;
+            line-height: 60px;
+        }
+        
+        .layui-nav-tree .layui-nav-item a {
+            color: #ffffff;
+        }
+        
+        .layui-nav-tree .layui-nav-item a:hover {
+            background-color: #555555;
+        }
+        
+        .layui-nav-tree .layui-this {
+            background-color: #666666;
+        }
+        
+        .content-wrapper {
+            padding: 20px;
+        }
+        
+        .stats-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-item.users {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .stat-item.roles {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .stat-item.permissions {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stat-item.online {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .breadcrumb {
+            background: #ffffff;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <!-- 头部 -->
+        <div class="layui-header">
+            <div class="header-logo">
+                <i class="layui-icon layui-icon-home"></i> TSM
+            </div>
+            <ul class="layui-nav layui-layout-right header-user">
+                <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+                    <a href="javascript:;">
+                        <img src="//tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg" class="layui-nav-img">
+                        <span id="username">管理员</span>
+                    </a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="/profile">个人中心</a></dd>
+                        <dd><a href="javascript:logout()">退出登录</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- 侧边栏 -->
+        <div class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <ul class="layui-nav layui-nav-tree" lay-filter="nav">
+                    <li class="layui-nav-item layui-this">
+                        <a href="/index"><i class="layui-icon layui-icon-home"></i> 主控制台</a>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;"><i class="layui-icon layui-icon-user"></i> 用户管理</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="/user/list">用户列表</a></dd>
+                            <dd><a href="/user/add">新增用户</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;"><i class="layui-icon layui-icon-vercode"></i> 权限管理</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="/permission/role">角色管理</a></dd>
+                            <dd><a href="/permission/assign">权限分配</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="/profile"><i class="layui-icon layui-icon-username"></i> 个人中心</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 主体内容 -->
+        <div class="layui-body">
+            <!-- 面包屑导航 -->
+            <div class="breadcrumb">
+                <span class="layui-breadcrumb" lay-separator=">">
+                    <a href="/index">主控制台</a>
+                    <a><cite>系统概览</cite></a>
+                </span>
+            </div>
+            
+            <div class="content-wrapper">
+                <!-- 统计卡片 -->
+                <div class="stats-grid">
+                    <div class="stat-item users">
+                        <div class="stat-number" id="totalUsers">0</div>
+                        <div class="stat-label">总用户数</div>
+                    </div>
+                    <div class="stat-item roles">
+                        <div class="stat-number" id="totalRoles">0</div>
+                        <div class="stat-label">角色数量</div>
+                    </div>
+                    <div class="stat-item permissions">
+                        <div class="stat-number" id="totalPermissions">0</div>
+                        <div class="stat-label">权限数量</div>
+                    </div>
+                    <div class="stat-item online">
+                        <div class="stat-number" id="onlineUsers">0</div>
+                        <div class="stat-label">在线用户</div>
+                    </div>
+                </div>
+                
+                <!-- 系统信息 -->
+                <div class="stats-card">
+                    <h3 style="margin-top: 0; color: #333333;">系统信息</h3>
+                    <div class="layui-row layui-col-space20">
+                        <div class="layui-col-md6">
+                            <p><strong>系统名称：</strong>TSM分布式微服务后台管理系统</p>
+                            <p><strong>系统版本：</strong>v1.0.0</p>
+                            <p><strong>技术栈：</strong>Spring Boot + Spring Cloud + MyBatis + MySQL + Redis</p>
+                        </div>
+                        <div class="layui-col-md6">
+                            <p><strong>服务器时间：</strong><span id="serverTime"></span></p>
+                            <p><strong>运行环境：</strong>Java 8 + Maven 3.8+</p>
+                            <p><strong>数据库：</strong>MySQL 8.0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部 -->
+        <div class="layui-footer" style="text-align: center; color: #999999;">
+            © 2024 TSM分布式微服务后台管理系统
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+    <script>
+        layui.use(['element', 'nav', 'layer'], function(){
+            var element = layui.element;
+            var layer = layui.layer;
+            
+            // 检查登录状态
+            var token = localStorage.getItem('token');
+            var userInfo = localStorage.getItem('userInfo');
+            
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            // 显示用户信息
+            if (userInfo) {
+                var user = JSON.parse(userInfo);
+                document.getElementById('username').textContent = user.realName || user.username;
+            }
+            
+            // 加载统计数据
+            loadStatistics();
+            
+            // 更新服务器时间
+            updateServerTime();
+            setInterval(updateServerTime, 1000);
+        });
+        
+        // 加载统计数据
+        function loadStatistics() {
+            fetch('/api/user/statistics', {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    document.getElementById('totalUsers').textContent = data.data.totalUsers || 0;
+                    document.getElementById('onlineUsers').textContent = data.data.activeUsers || 0;
+                }
+            })
+            .catch(error => {
+                console.error('加载统计数据失败:', error);
+            });
+            
+            // 模拟其他数据
+            document.getElementById('totalRoles').textContent = '3';
+            document.getElementById('totalPermissions').textContent = '18';
+        }
+        
+        // 更新服务器时间
+        function updateServerTime() {
+            var now = new Date();
+            var timeString = now.getFullYear() + '-' + 
+                            String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                            String(now.getDate()).padStart(2, '0') + ' ' + 
+                            String(now.getHours()).padStart(2, '0') + ':' + 
+                            String(now.getMinutes()).padStart(2, '0') + ':' + 
+                            String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('serverTime').textContent = timeString;
+        }
+        
+        // 退出登录
+        function logout() {
+            layui.layer.confirm('确定要退出登录吗？', {icon: 3, title:'提示'}, function(index){
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login';
+                layui.layer.close(index);
+            });
+        }
+    </script>
+</body>
+</html>

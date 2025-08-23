@@ -10,7 +10,7 @@
 tsm-api（公共DTO/异常定义）
 tsm-common（工具类/枚举）
 tsm-auth（认证授权模块）
-tsm-system（核心业务模块）
+tsm-admin（后台管理模块）
 •配置分布式事务管理（Seata）
 
 3.用户管理模块开发
