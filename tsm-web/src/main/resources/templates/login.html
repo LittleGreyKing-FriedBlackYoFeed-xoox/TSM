@@ -22,7 +22,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             padding: 40px;
-            width: 400px;
+            width: 320px;
             max-width: 90%;
         }
         
@@ -80,24 +80,7 @@
             background-color: #555555;
         }
         
-        .remember-me {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 15px 0;
-            font-size: 14px;
-            color: #666666;
-        }
-        
-        .forgot-password {
-            color: #999999;
-            text-decoration: none;
-            font-size: 12px;
-        }
-        
-        .forgot-password:hover {
-            color: #666666;
-        }
+
         
         .error-msg {
             color: #ff5722;
@@ -126,12 +109,7 @@
             
 
             
-            <div class="remember-me">
-                <label class="layui-form-label" style="padding: 0; width: auto;">
-                    <input type="checkbox" name="rememberMe" lay-skin="primary" title="记住我">
-                </label>
-                <a href="#" class="forgot-password">忘记密码？</a>
-            </div>
+
             
             <button type="submit" class="login-btn" lay-submit lay-filter="loginSubmit">登录</button>
         </form>

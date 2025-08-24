@@ -12,7 +12,7 @@
     
     <artifactId>tsm-web</artifactId>
     <name>TSM前端静态资源</name>
-    <description>TSM系统前端静态资源模块，包含HTML、CSS、JS等前端文件</description>
+    <description>TSM前端静态资源模块，包含HTML、CSS、JS等前端文件</description>
     
     <dependencies>
         <!-- Spring Boot Web -->

@@ -1,0 +1,26 @@
+<th:block th:fragment="sidebar">
+<!-- 侧边栏 -->
+<div class="layui-side">
+    <div class="layui-side-scroll">
+        <ul class="layui-nav layui-nav-tree" lay-filter="nav">
+            <li class="layui-nav-item">
+                <a href="/index"><i class="layui-icon layui-icon-home"></i> 首页</a>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a href="javascript:;"><i class="layui-icon layui-icon-user"></i> 用户管理</a>
+                <dl class="layui-nav-child">
+                    <dd class="layui-this"><a href="/user/list">用户列表</a></dd>
+                    <dd><a href="/user/add">备用</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item">
+                <a href="javascript:;"><i class="layui-icon layui-icon-vercode"></i> 权限管理</a>
+                <dl class="layui-nav-child">
+                    <dd><a href="/permission/role">角色管理</a></dd>
+                    <dd><a href="/permission/assign">权限分配</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+</div>
+</th:block>

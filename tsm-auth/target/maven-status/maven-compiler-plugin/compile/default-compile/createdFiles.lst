@@ -1,4 +1,5 @@
 com\tsm\auth\vo\LoginResponse.class
+com\tsm\auth\config\SecurityConfig.class
 com\tsm\auth\controller\AuthController.class
 com\tsm\auth\service\AuthService.class
 com\tsm\auth\controller\AuthController$1.class

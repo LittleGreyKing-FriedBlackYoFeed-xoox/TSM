@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSM - 用户管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css">
+    <!-- 引入公共样式 -->
+    <link th:href="@{/css/common-styles.css}" rel="stylesheet" type="text/css"/>
+    
+    <style>
+        .search-form {
+            background: #ffffff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .table-container {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .toolbar {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e6e6e6;
+        }
+        
+        .status-enabled {
+            color: #52c41a;
+            font-weight: bold;
+        }
+        
+        .status-disabled {
+            color: #ff4d4f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <!-- 引入顶部导航栏 -->
+        <th:block th:include="common/header :: header"></th:block>
+        
+        <!-- 侧边栏 -->
+        <th:block th:include="common/sidebar :: sidebar"></th:block>
+        
+        <!-- 主体内容 -->
+        <div class="layui-body">
+            <!-- 面包屑导航 -->
+            <div class="breadcrumb">
+                <span class="layui-breadcrumb" lay-separator=">">
+                    <a href="/index">首页</a>
+                    <a href="javascript:;">用户管理</a>
+                    <a><cite>用户列表</cite></a>
+                </span>
+            </div>
+            
+            <div class="content-wrapper">
+        
+        <!-- 搜索表单 -->
+        <div class="search-form">
+            <form class="layui-form" lay-filter="searchForm">
+                <div class="layui-row layui-col-space15">
+                    <div class="layui-col-md3">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">用户名</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="username" placeholder="请输入用户名" class="layui-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-col-md3">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">真实姓名</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="realName" placeholder="请输入真实姓名" class="layui-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-col-md3">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">状态</label>
+                            <div class="layui-input-block">
+                                <select name="status">
+                                    <option value="">全部</option>
+                                    <option value="1">启用</option>
+                                    <option value="0">禁用</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-col-md3">
+                        <div class="layui-form-item">
+                            <div class="layui-input-block" style="margin-left: 0;">
+                                <button type="button" class="layui-btn" lay-submit lay-filter="search">
+                                    <i class="layui-icon layui-icon-search"></i> 搜索
+                                </button>
+                                <button type="reset" class="layui-btn layui-btn-primary">
+                                    <i class="layui-icon layui-icon-refresh"></i> 重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 数据表格 -->
+        <div class="table-container">
+            <div class="toolbar">
+                <button type="button" class="layui-btn" id="addUser">
+                    <i class="layui-icon layui-icon-add-1"></i> 新增用户
+                </button>
+                <button type="button" class="layui-btn layui-btn-danger" id="batchDelete">
+                    <i class="layui-icon layui-icon-delete"></i> 批量删除
+                </button>
+            </div>
+            <table id="userTable" lay-filter="userTable"></table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 操作列模板 -->
+    <script type="text/html" id="operationTpl">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">
+            <i class="layui-icon layui-icon-edit"></i> 编辑
+        </a>
+        {{# if(d.status == 1) { }}
+            <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="disable">
+                <i class="layui-icon layui-icon-close"></i> 禁用
+            </a>
+        {{# } else { }}
+            <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="enable">
+                <i class="layui-icon layui-icon-ok"></i> 启用
+            </a>
+        {{# } }}
+        <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="resetPassword">
+            <i class="layui-icon layui-icon-password"></i> 重置密码
+        </a>
+        <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">
+            <i class="layui-icon layui-icon-delete"></i> 删除
+        </a>
+    </script>
+    
+    <!-- 状态列模板 -->
+    <script type="text/html" id="statusTpl">
+        {{# if(d.status == 1) { }}
+            <span class="status-enabled">启用</span>
+        {{# } else { }}
+            <span class="status-disabled">禁用</span>
+        {{# } }}
+    </script>
+    
+    <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+    <script th:src="@{/js/user-list.js}"></script>
+</body>
+</html>

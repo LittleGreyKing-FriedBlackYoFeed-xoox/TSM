@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户列表测试</title>
+    <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css">
+</head>
+<body>
+    <div class="layui-container" style="margin-top: 20px;">
+        <div class="layui-row">
+            <div class="layui-col-md12">
+                <h2>用户列表功能测试</h2>
+                <table class="layui-hide" id="userTable" lay-filter="userTable"></table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+    <script>
+        layui.use(['table'], function(){
+            var table = layui.table;
+            
+            // 渲染表格
+            table.render({
+                elem: '#userTable',
+                url: '/api/user/page',
+                page: true,
+                cols: [[
+                    {field: 'id', title: 'ID', width: 80},
+                    {field: 'username', title: '用户名', width: 120},
+                    {field: 'realName', title: '真实姓名', width: 120},
+                    {field: 'email', title: '邮箱', width: 200},
+                    {field: 'phone', title: '手机号', width: 130},
+                    {field: 'status', title: '状态', width: 80, templet: function(d){
+                        return d.status == 1 ? '<span style="color: green;">启用</span>' : '<span style="color: red;">禁用</span>';
+                    }}
+                ]],
+                parseData: function(res) {
+                    console.log('API Response:', res);
+                    // 处理API响应格式：Result<PageResult<UserVO>>
+                    if (res.code === 200 && res.data) {
+                        return {
+                            "code": 0, // Layui期望成功状态码为0
+                            "msg": res.message || '查询成功',
+                            "count": res.data.total || 0,
+                            "data": res.data.records || []
+                        };
+                    } else {
+                        return {
+                            "code": res.code || 500,
+                            "msg": res.message || '查询失败',
+                            "count": 0,
+                            "data": []
+                        };
+                    }
+                },
+                request: {
+                    pageName: 'pageNum',
+                    limitName: 'pageSize'
+                },
+                limits: [10, 20, 50],
+                limit: 10
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,6 +1,14 @@
-D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\UserApplication.java
 D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\dto\UserQueryDTO.java
-D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\dto\UserDTO.java
+D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\entity\User.java
+D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\controller\RoleController.java
 D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\service\UserService.java
+D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\service\DatabaseInitService.java
 D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\vo\UserVO.java
+D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\mapper\UserMapper.java
+D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\UserApplication.java
+D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\service\impl\UserServiceImpl.java
+D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\dto\UserDTO.java
+D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\controller\DatabaseController.java
 D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\entity\UserRole.java
+D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\config\SecurityConfig.java
+D:\Trae_workspace_EN\TSM\tsm-user\src\main\java\com\tsm\user\controller\UserController.java

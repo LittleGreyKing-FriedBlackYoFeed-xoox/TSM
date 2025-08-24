@@ -1,2 +1,4 @@
-com\tsm\web\controller\PageController.class
 com\tsm\web\WebApplication.class
+com\tsm\web\controller\RoleApiController.class
+com\tsm\web\controller\UserApiController.class
+com\tsm\web\controller\PageController.class

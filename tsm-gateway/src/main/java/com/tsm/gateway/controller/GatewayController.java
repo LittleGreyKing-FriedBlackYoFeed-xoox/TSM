@@ -61,7 +61,7 @@ public class GatewayController {
     public Map<String, Object> info() {
         Map<String, Object> result = new HashMap<>();
         result.put("name", "TSM API Gateway");
-        result.put("description", "TSM系统API网关服务，负责路由转发和负载均衡");
+        result.put("description", "TSM API网关服务，负责路由转发和负载均衡");
         result.put("version", "1.0.0");
         result.put("author", "TSM Team");
         result.put("startTime", System.currentTimeMillis());

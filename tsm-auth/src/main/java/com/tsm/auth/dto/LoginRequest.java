@@ -20,13 +20,6 @@ public class LoginRequest {
     @NotBlank(message = "密码不能为空")
     private String password;
     
-
-    
-    /**
-     * 记住我
-     */
-    private Boolean rememberMe = false;
-    
     public LoginRequest() {
     }
     
@@ -50,15 +43,5 @@ public class LoginRequest {
     
     public void setPassword(String password) {
         this.password = password;
-    }
-    
-
-    
-    public Boolean getRememberMe() {
-        return rememberMe;
-    }
-    
-    public void setRememberMe(Boolean rememberMe) {
-        this.rememberMe = rememberMe;
     }
 }

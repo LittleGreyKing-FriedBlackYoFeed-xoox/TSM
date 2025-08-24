@@ -4,33 +4,19 @@ server:
 spring:
   application:
     name: tsm-gateway
-  profiles:
-    active: dev
-  config:
-    import: optional:nacos:
   cloud:
     nacos:
-      discovery:
-        server-addr: localhost:8848
-        namespace: tsm
-        group: DEFAULT_GROUP
-        enabled: false
       config:
-        server-addr: localhost:8848
-        namespace: tsm
-        group: DEFAULT_GROUP
-        file-extension: yml
         import-check:
           enabled: false
     gateway:
       discovery:
         locator:
-          enabled: true
-          lower-case-service-id: true
+          enabled: false
       routes:
         # 认证服务路由
         - id: tsm-auth
-          uri: lb://tsm-auth
+          uri: http://localhost:8081
           predicates:
             - Path=/api/auth/**
           filters:
@@ -38,7 +24,7 @@ spring:
         
         # 用户服务路由
         - id: tsm-user
-          uri: lb://tsm-user
+          uri: http://localhost:8082
           predicates:
             - Path=/api/user/**
           filters:
@@ -46,7 +32,7 @@ spring:
         
         # 权限服务路由
         - id: tsm-permission
-          uri: lb://tsm-permission
+          uri: http://localhost:8083
           predicates:
             - Path=/api/permission/**,/api/role/**
           filters:
@@ -54,7 +40,7 @@ spring:
         
         # 静态资源路由
         - id: tsm-web
-          uri: lb://tsm-web
+          uri: http://localhost:8084
           predicates:
             - Path=/static/**,/,/login,/index,/user/**,/permission/**,/profile
           filters:

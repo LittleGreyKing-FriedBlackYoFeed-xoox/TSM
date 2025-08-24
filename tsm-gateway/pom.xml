@@ -12,7 +12,7 @@
     
     <artifactId>tsm-gateway</artifactId>
     <name>TSM API网关服务</name>
-    <description>TSM系统API网关服务，负责路由转发和负载均衡</description>
+    <description>TSM API网关服务，负责路由转发和负载均衡</description>
     
     <dependencies>
         <!-- Spring Cloud Gateway -->

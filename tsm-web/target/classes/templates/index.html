@@ -20,7 +20,9 @@
         }
         
         .layui-layout-admin .layui-side {
-            background-color: #333333;
+            background: #ffffff;
+            border-right: 1px solid #e6e6e6;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.05);
         }
         
         .layui-layout-admin .layui-body {
@@ -44,15 +46,41 @@
         }
         
         .layui-nav-tree .layui-nav-item a {
-            color: #ffffff;
+            color: #666666;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            margin: 2px 8px;
         }
         
         .layui-nav-tree .layui-nav-item a:hover {
-            background-color: #555555;
+            background: #f8f9fa;
+            color: #333333;
+            transform: translateX(3px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
         
         .layui-nav-tree .layui-this {
-            background-color: #666666;
+            background: #f0f0f0;
+            border-radius: 6px;
+            margin: 2px 8px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .layui-nav-tree .layui-this > a {
+            color: #333333;
+            font-weight: 600;
+        }
+        
+        .layui-nav-tree .layui-nav-child dd a {
+            color: #888888;
+            padding-left: 45px;
+            font-size: 13px;
+        }
+        
+        .layui-nav-tree .layui-nav-child dd a:hover {
+            background-color: #f5f5f5;
+            color: #555555;
         }
         
         .content-wrapper {
@@ -74,28 +102,26 @@
             margin-bottom: 20px;
         }
         
-        .stat-item {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .tech-item {
+            background: #ffffff;
+            color: #333333;
             padding: 20px;
             border-radius: 8px;
             text-align: center;
+            border: 1px solid #e6e6e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
-        .stat-item.users {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .tech-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #495057;
         }
         
-        .stat-item.roles {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        .stat-item.permissions {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-        
-        .stat-item.online {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        .tech-desc {
+            font-size: 14px;
+            color: #6c757d;
         }
         
         .stat-number {
@@ -120,81 +146,39 @@
 </head>
 <body class="layui-layout-body">
     <div class="layui-layout layui-layout-admin">
-        <!-- 头部 -->
-        <div class="layui-header">
-            <div class="header-logo">
-                <i class="layui-icon layui-icon-home"></i> TSM
-            </div>
-            <ul class="layui-nav layui-layout-right header-user">
-                <li class="layui-nav-item layui-hide layui-show-md-inline-block">
-                    <a href="javascript:;">
-                        <img src="//tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg" class="layui-nav-img">
-                        <span id="username">管理员</span>
-                    </a>
-                    <dl class="layui-nav-child">
-                        <dd><a href="/profile">个人中心</a></dd>
-                        <dd><a href="javascript:logout()">退出登录</a></dd>
-                    </dl>
-                </li>
-            </ul>
-        </div>
+        <!-- 引入顶部导航栏 -->
+        <th:block th:include="common/header :: header"></th:block>
         
         <!-- 侧边栏 -->
-        <div class="layui-side layui-bg-black">
-            <div class="layui-side-scroll">
-                <ul class="layui-nav layui-nav-tree" lay-filter="nav">
-                    <li class="layui-nav-item layui-this">
-                        <a href="/index"><i class="layui-icon layui-icon-home"></i> 主控制台</a>
-                    </li>
-                    <li class="layui-nav-item">
-                        <a href="javascript:;"><i class="layui-icon layui-icon-user"></i> 用户管理</a>
-                        <dl class="layui-nav-child">
-                            <dd><a href="/user/list">用户列表</a></dd>
-                            <dd><a href="/user/add">新增用户</a></dd>
-                        </dl>
-                    </li>
-                    <li class="layui-nav-item">
-                        <a href="javascript:;"><i class="layui-icon layui-icon-vercode"></i> 权限管理</a>
-                        <dl class="layui-nav-child">
-                            <dd><a href="/permission/role">角色管理</a></dd>
-                            <dd><a href="/permission/assign">权限分配</a></dd>
-                        </dl>
-                    </li>
-                    <li class="layui-nav-item">
-                        <a href="/profile"><i class="layui-icon layui-icon-username"></i> 个人中心</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+        <th:block th:include="common/sidebar :: sidebar"></th:block>
         
         <!-- 主体内容 -->
         <div class="layui-body">
             <!-- 面包屑导航 -->
             <div class="breadcrumb">
                 <span class="layui-breadcrumb" lay-separator=">">
-                    <a href="/index">主控制台</a>
-                    <a><cite>系统概览</cite></a>
+                    <a href="/index">home</a>
                 </span>
             </div>
             
             <div class="content-wrapper">
-                <!-- 统计卡片 -->
+                <!-- 技术栈展示 -->
                 <div class="stats-grid">
-                    <div class="stat-item users">
-                        <div class="stat-number" id="totalUsers">0</div>
-                        <div class="stat-label">总用户数</div>
+                    <div class="tech-item">
+                        <div class="tech-name">Spring Boot</div>
+                        <div class="tech-desc">微服务框架</div>
                     </div>
-                    <div class="stat-item roles">
-                        <div class="stat-number" id="totalRoles">0</div>
-                        <div class="stat-label">角色数量</div>
+                    <div class="tech-item">
+                        <div class="tech-name">Spring Cloud</div>
+                        <div class="tech-desc">分布式系统</div>
                     </div>
-                    <div class="stat-item permissions">
-                        <div class="stat-number" id="totalPermissions">0</div>
-                        <div class="stat-label">权限数量</div>
+                    <div class="tech-item">
+                        <div class="tech-name">MyBatis</div>
+                        <div class="tech-desc">持久层框架</div>
                     </div>
-                    <div class="stat-item online">
-                        <div class="stat-number" id="onlineUsers">0</div>
-                        <div class="stat-label">在线用户</div>
+                    <div class="tech-item">
+                        <div class="tech-name">MySQL</div>
+                        <div class="tech-desc">关系型数据库</div>
                     </div>
                 </div>
                 
@@ -203,9 +187,9 @@
                     <h3 style="margin-top: 0; color: #333333;">系统信息</h3>
                     <div class="layui-row layui-col-space20">
                         <div class="layui-col-md6">
-                            <p><strong>系统名称：</strong>TSM分布式微服务后台管理系统</p>
+                            <p><strong>系统名称：</strong>TSM</p>
                             <p><strong>系统版本：</strong>v1.0.0</p>
-                            <p><strong>技术栈：</strong>Spring Boot + Spring Cloud + MyBatis + MySQL + Redis</p>
+                            <p><strong>技术栈：</strong>Spring Boot + Spring Cloud + MyBatis + MySQL</p>
                         </div>
                         <div class="layui-col-md6">
                             <p><strong>服务器时间：</strong><span id="serverTime"></span></p>
@@ -219,13 +203,13 @@
         
         <!-- 底部 -->
         <div class="layui-footer" style="text-align: center; color: #999999;">
-            © 2024 TSM分布式微服务后台管理系统
+            © 2024 TSM
         </div>
     </div>
     
     <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
     <script>
-        layui.use(['element', 'nav', 'layer'], function(){
+        layui.use(['element', 'layer'], function(){
             var element = layui.element;
             var layer = layui.layer;
             
@@ -244,36 +228,12 @@
                 document.getElementById('username').textContent = user.realName || user.username;
             }
             
-            // 加载统计数据
-            loadStatistics();
-            
             // 更新服务器时间
             updateServerTime();
             setInterval(updateServerTime, 1000);
         });
         
-        // 加载统计数据
-        function loadStatistics() {
-            fetch('/api/user/statistics', {
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.code === 200) {
-                    document.getElementById('totalUsers').textContent = data.data.totalUsers || 0;
-                    document.getElementById('onlineUsers').textContent = data.data.activeUsers || 0;
-                }
-            })
-            .catch(error => {
-                console.error('加载统计数据失败:', error);
-            });
-            
-            // 模拟其他数据
-            document.getElementById('totalRoles').textContent = '3';
-            document.getElementById('totalPermissions').textContent = '18';
-        }
+
         
         // 更新服务器时间
         function updateServerTime() {

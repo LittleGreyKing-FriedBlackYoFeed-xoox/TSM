@@ -1,7 +1,15 @@
 com\tsm\user\dto\UserDTO.class
-com\tsm\user\dto\UserQueryDTO.class
 com\tsm\user\entity\UserRole.class
+com\tsm\user\mapper\UserMapper.class
 com\tsm\user\UserApplication.class
 com\tsm\user\vo\UserVO.class
+com\tsm\user\entity\User.class
 com\tsm\user\vo\UserVO$RoleInfo.class
 com\tsm\user\service\UserService.class
+com\tsm\user\controller\DatabaseController.class
+com\tsm\user\dto\UserQueryDTO.class
+com\tsm\user\service\DatabaseInitService.class
+com\tsm\user\config\SecurityConfig.class
+com\tsm\user\controller\UserController.class
+com\tsm\user\service\impl\UserServiceImpl.class
+com\tsm\user\controller\RoleController.class

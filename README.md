@@ -2,7 +2,7 @@
 
 ## 项目简介
 
-TSM（分布式微服务后台管理系统）是一个基于Spring Boot微服务架构的企业级后台管理平台，主要实现用户管理和权限管理功能，采用RBAC权限模型，支持按钮级别的细粒度权限控制。
+TSM是一个基于Spring Boot微服务架构的企业级后台管理平台，主要实现用户管理和权限管理功能，采用RBAC权限模型，支持按钮级别的细粒度权限控制。
 
 ## 技术架构
 
@@ -78,25 +78,7 @@ TSM/
 CREATE DATABASE TSM DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-#### 安装Redis
-```bash
-# 启动Redis服务
-redis-server
-```
-
-#### 安装Nacos
-```bash
-# 下载Nacos
-wget https://github.com/alibaba/nacos/releases/download/2.2.3/nacos-server-2.2.3.tar.gz
-
-# 解压并启动
-tar -xzf nacos-server-2.2.3.tar.gz
-cd nacos/bin
-# Windows
-startup.cmd -m standalone
-# Linux/Mac
-sh startup.sh -m standalone
-```
+**注意：** 当前版本暂未使用Redis和Nacos，可以跳过这些组件的安装。
 
 ### 2. 数据库初始化
 
@@ -109,6 +91,16 @@ mysql -u root -p TSM < sql/init.sql
 
 修改各服务的 `application.yml` 配置文件中的数据库连接信息：
 
+**tsm-user/src/main/resources/application.yml:**
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/TSM?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8
+    username: root
+    password: your_password
+```
+
+**tsm-web/src/main/resources/application.yml:**
 ```yaml
 spring:
   datasource:
@@ -126,43 +118,77 @@ mvn clean compile
 
 ### 5. 启动服务
 
-按以下顺序启动各个服务：
+**重要：** 需要按以下顺序启动服务，并且每个服务需要在单独的终端窗口中运行：
 
+#### 5.1 启动用户管理服务
 ```bash
-# 1. 启动认证服务
-cd tsm-auth
-mvn spring-boot:run
-
-# 2. 启动用户管理服务
+# 打开第一个终端窗口
 cd tsm-user
 mvn spring-boot:run
 
-# 3. 启动权限管理服务
-cd tsm-permission
-mvn spring-boot:run
-
-# 4. 启动前端Web服务
-cd tsm-web
-mvn spring-boot:run
+# 等待服务启动完成，看到类似以下日志表示启动成功：
+# Started TsmUserApplication in xxx seconds
 ```
 
-### 6. 访问系统
+#### 5.2 启动前端Web服务
+```bash
+# 打开第二个终端窗口
+cd tsm-web
+mvn spring-boot:run
 
-打开浏览器访问：http://localhost:8080
+# 等待服务启动完成，看到类似以下日志表示启动成功：
+# Started TsmWebApplication in xxx seconds
+```
 
-**默认管理员账号：**
-- 用户名：admin
-- 密码：admin123
+### 6. 验证服务启动
+
+#### 6.1 检查服务状态
+```bash
+# 检查用户服务API
+curl http://localhost:8082/api/user/page?pageNum=1&pageSize=10
+
+# 检查Web服务
+curl http://localhost:8084/user/list
+```
+
+#### 6.2 访问系统
+
+打开浏览器访问：**http://localhost:8084**
+
+**可用页面：**
+- 用户列表：http://localhost:8084/user/list
+- 新增用户：http://localhost:8084/user/add
+- 编辑用户：http://localhost:8084/user/edit?id=1
+- 简单测试页面：http://localhost:8084/user/simple-test
+
+**默认用户数据：**
+- 管理员：admin
+- 领导：leader
+- 普通用户：user1, user2
+
+### 7. 常用操作
+
+#### 7.1 测试用户管理功能
+```bash
+# 获取用户列表
+Invoke-RestMethod -Uri "http://localhost:8084/api/user/page?pageNum=1&pageSize=10" -Method GET
+
+# 获取角色列表
+Invoke-RestMethod -Uri "http://localhost:8084/api/role/list" -Method GET
+```
+
+#### 7.2 停止服务
+在各个终端窗口中按 `Ctrl+C` 停止对应的服务。
 
 ## 服务端口说明
 
-| 服务名称 | 端口 | 说明 |
-|---------|------|------|
-| tsm-web | 8080 | 前端Web服务 |
-| tsm-auth | 8081 | 认证服务 |
-| tsm-user | 8082 | 用户管理服务 |
-| tsm-permission | 8083 | 权限管理服务 |
-| tsm-gateway | 8084 | API网关服务（可选） |
+| 服务名称 | 端口 | 说明 | 状态 |
+|---------|------|------|------|
+| tsm-user | 8082 | 用户管理服务 | ✅ 已实现 |
+| tsm-web | 8084 | 前端Web服务 | ✅ 已实现 |
+| tsm-auth | 8081 | 认证服务 | 🚧 待实现 |
+| tsm-permission | 8083 | 权限管理服务 | 🚧 待实现 |
+| tsm-gateway | 8080 | API网关服务 | 🚧 待实现 |
 
 ## API文档
 

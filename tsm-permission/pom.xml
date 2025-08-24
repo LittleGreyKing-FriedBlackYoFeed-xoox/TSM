@@ -12,7 +12,7 @@
     
     <artifactId>tsm-permission</artifactId>
     <name>TSM权限管理服务</name>
-    <description>TSM系统权限管理服务，负责角色和权限的管理</description>
+    <description>TSM权限管理服务，负责角色和权限的管理</description>
     
     <dependencies>
         <!-- Spring Boot Web -->

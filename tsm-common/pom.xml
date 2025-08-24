@@ -12,7 +12,7 @@
     
     <artifactId>tsm-common</artifactId>
     <name>TSM公共模块</name>
-    <description>TSM系统公共模块，包含通用实体类、工具类、响应结果类等</description>
+    <description>TSM公共模块，包含通用实体类、工具类、响应结果类等</description>
     
     <dependencies>
         <!-- Spring Boot Starter -->

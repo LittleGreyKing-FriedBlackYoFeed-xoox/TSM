@@ -12,7 +12,7 @@
     
     <artifactId>tsm-auth</artifactId>
     <name>TSM认证服务</name>
-    <description>TSM系统认证服务，负责用户登录认证和JWT令牌管理</description>
+    <description>TSM认证服务，负责用户登录认证和JWT令牌管理</description>
     
     <dependencies>
         <!-- Spring Boot Web -->

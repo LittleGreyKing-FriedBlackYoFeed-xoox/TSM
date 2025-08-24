@@ -1,0 +1,20 @@
+<th:block th:fragment="header">
+<!-- 顶部导航栏 -->
+<div class="layui-header">
+    <div class="header-logo">
+        <i class="layui-icon layui-icon-website"></i> TSM 管理系统
+    </div>
+    <ul class="layui-nav layui-layout-right header-user">
+        <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+            <a href="javascript:;">
+                <img src="//tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg" class="layui-nav-img">
+                <span id="username">管理员</span>
+            </a>
+            <dl class="layui-nav-child">
+                <dd><a href="/profile">个人中心</a></dd>
+                <dd><a href="javascript:logout()">退出登录</a></dd>
+            </dl>
+        </li>
+    </ul>
+</div>
+</th:block>

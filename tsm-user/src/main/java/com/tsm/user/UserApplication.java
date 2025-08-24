@@ -1,7 +1,6 @@
 package com.tsm.user;
 
-// 暂时禁用MyBatis
-// import org.mybatis.spring.annotation.MapperScan;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 // import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -15,7 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 // @EnableDiscoveryClient  // 暂时禁用服务发现
 // @EnableFeignClients     // 暂时禁用Feign客户端
-// @MapperScan("com.tsm.user.mapper")
+@MapperScan("com.tsm.user.mapper")
 @ComponentScan(basePackages = {"com.tsm.user", "com.tsm.common"})
 public class UserApplication {
     

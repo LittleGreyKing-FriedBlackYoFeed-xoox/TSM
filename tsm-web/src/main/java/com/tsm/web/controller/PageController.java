@@ -73,4 +73,20 @@ public class PageController {
     public String profile() {
         return "profile";
     }
+    
+    /**
+     * 用户测试页面
+     */
+    @GetMapping("/user/test")
+    public String userTest() {
+        return "user/test";
+    }
+    
+    /**
+     * 用户简单测试页面
+     */
+    @GetMapping("/user/simple-test")
+    public String userSimpleTest() {
+        return "user/simple-test";
+    }
 }

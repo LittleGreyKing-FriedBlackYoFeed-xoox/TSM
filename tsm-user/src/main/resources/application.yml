@@ -50,25 +50,25 @@ spring:
   #       group: DEFAULT_GROUP
   #       file-extension: yml
 
-# MyBatis配置 - 暂时完全禁用
-# mybatis-plus:
-#   configuration:
-#     # 开启驼峰命名转换
-#     map-underscore-to-camel-case: true
-#     # 开启二级缓存
-#     cache-enabled: true
-#     # 打印SQL语句
-#     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-#   global-config:
-#     db-config:
-#       # 主键类型
-#       id-type: auto
-#       # 逻辑删除字段
-#       logic-delete-field: deleted
-#       # 逻辑删除值
-#       logic-delete-value: 1
-#       logic-not-delete-value: 0
-#   # mapper-locations: classpath*:/mapper/**/*.xml  # 暂时禁用mapper扫描
+# MyBatis配置
+mybatis-plus:
+  configuration:
+    # 开启驼峰命名转换
+    map-underscore-to-camel-case: true
+    # 开启二级缓存
+    cache-enabled: true
+    # 打印SQL语句
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 主键类型
+      id-type: auto
+      # 逻辑删除字段
+      logic-delete-field: deleted
+      # 逻辑删除值
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:/mapper/**/*.xml
 
 # 日志配置
 logging:

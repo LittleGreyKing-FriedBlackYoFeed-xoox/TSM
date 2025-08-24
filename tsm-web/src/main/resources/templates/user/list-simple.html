@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSM - 用户列表</title>
+    <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css">
+    <link th:href="@{/css/common-styles.css}" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+    <div class="layui-layout layui-layout-admin">
+        <!-- 引入顶部导航栏 -->
+        <th:block th:include="common/header :: header"></th:block>
+        
+        <!-- 侧边栏 -->
+        <th:block th:include="common/sidebar :: sidebar"></th:block>
+        
+        <!-- 主体内容 -->
+        <div class="layui-body">
+            <div class="content-wrapper">
+                <h2>用户列表</h2>
+                <p>这是一个简化的用户列表页面。</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

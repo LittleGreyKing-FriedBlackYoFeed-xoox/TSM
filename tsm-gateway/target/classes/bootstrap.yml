@@ -1,18 +1,19 @@
 spring:
   application:
     name: tsm-gateway
-  cloud:
-    nacos:
-      config:
-        server-addr: localhost:8848
-        namespace: tsm
-        group: DEFAULT_GROUP
-        file-extension: yml
-        shared-configs:
-          - data-id: common.yml
-            group: DEFAULT_GROUP
-            refresh: true
-      discovery:
-        server-addr: localhost:8848
-        namespace: tsm
-        group: DEFAULT_GROUP
+  # 暂时禁用Nacos配置
+  # cloud:
+  #   nacos:
+  #     config:
+  #       server-addr: localhost:8848
+  #       namespace: tsm
+  #       group: DEFAULT_GROUP
+  #       file-extension: yml
+  #       shared-configs:
+  #         - data-id: common.yml
+  #           group: DEFAULT_GROUP
+  #           refresh: true
+  #     discovery:
+  #       server-addr: localhost:8848
+  #       namespace: tsm
+  #       group: DEFAULT_GROUP

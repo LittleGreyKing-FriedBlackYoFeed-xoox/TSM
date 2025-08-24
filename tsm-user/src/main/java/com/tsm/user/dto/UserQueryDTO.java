@@ -46,7 +46,40 @@ public class UserQueryDTO {
      */
     private Long roleId;
     
+    /**
+     * 偏移量（用于分页查询）
+     */
+    private Integer offset;
+    
     public UserQueryDTO() {
+    }
+    
+    /**
+     * 获取页码（兼容方法）
+     */
+    public Long getPageNum() {
+        return current;
+    }
+    
+    /**
+     * 获取页面大小（兼容方法）
+     */
+    public Long getPageSize() {
+        return size;
+    }
+    
+    /**
+     * 设置偏移量
+     */
+    public void setOffset(Integer offset) {
+        this.offset = offset;
+    }
+    
+    /**
+     * 获取偏移量
+     */
+    public Integer getOffset() {
+        return offset;
     }
     
     // Getter and Setter

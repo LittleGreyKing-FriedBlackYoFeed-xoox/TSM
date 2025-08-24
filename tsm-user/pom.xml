@@ -12,7 +12,7 @@
     
     <artifactId>tsm-user</artifactId>
     <name>TSM用户管理服务</name>
-    <description>TSM系统用户管理服务，负责用户信息的增删改查操作</description>
+    <description>TSM用户管理服务，负责用户信息的增删改查操作</description>
     
     <dependencies>
         <!-- Spring Boot Web -->
@@ -39,11 +39,24 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency> -->
         
-        <!-- MyBatis Plus - 暂时禁用 -->
-        <!-- <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-        </dependency> -->
+        <!-- MyBatis -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        
+        <!-- Spring Security for password encoding -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        
+        <!-- Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
         
         <!-- MySQL -->
         <dependency>
